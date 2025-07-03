@@ -1,32 +1,68 @@
-﻿using TestApp.Models;
+﻿using TestApp.Enums;
+using TestApp.Models;
 
 namespace TestApp.Data.Repositories
 {
     public class StudyGroupRepository : IStudyGroupRepository
     {
-        public Task CreateStudyGroup(StudyGroup studyGroup)
+        private List<StudyGroup> StudyGroups = new List<StudyGroup>();
+
+        public async Task CreateStudyGroup(StudyGroup studyGroup)
         {
-            throw new NotImplementedException();
+            foreach (var user in studyGroup.Users)
+            {
+                if (await IsUserInStudyGroupWithSubject(user.ID, studyGroup.Subject))
+                {
+                    throw new Exception($"User {user.ID} is already in a study group with subject {studyGroup.Subject}");
+                }
+            }
+            StudyGroups.Add(studyGroup);
         }
 
         public Task<List<StudyGroup>> GetStudyGroups()
         {
-            throw new NotImplementedException();
+            return Task.FromResult(StudyGroups);
         }
 
-        public Task JoinStudyGroup(int studyGroupId, int userId)
+        public async Task JoinStudyGroup(int studyGroupId, int userId)
         {
-            throw new NotImplementedException();
+            var studyGroup = StudyGroups.FirstOrDefault(sg => sg.StudyGroupId == studyGroupId) ?? throw new ArgumentException($"Study group with ID {studyGroupId} not found");
+
+            if (await IsUserInStudyGroupWithSubject(userId, studyGroup.Subject))
+            {
+                throw new InvalidOperationException($"User {userId} is already in a study group with subject {studyGroup.Subject}");
+            }
+
+            var user = new User(userId, $"User {userId}"); // Assuming User has this constructor
+
+            studyGroup.AddUser(user);
         }
 
         public Task LeaveStudyGroup(int studyGroupId, int userId)
         {
-            throw new NotImplementedException();
+            var studyGroup = StudyGroups.FirstOrDefault(sg => sg.StudyGroupId == studyGroupId) ?? throw new ArgumentException($"Study group with ID {studyGroupId} not found");
+
+            var user = studyGroup.Users.FirstOrDefault(u => u.ID == userId) ?? throw new ArgumentException($"User {userId} is not a member of study group {studyGroupId}");
+
+            studyGroup.RemoveUser(user);
+
+            return Task.CompletedTask;
         }
 
-        public Task<List<StudyGroup>> SearchStudyGroups(string subject)
+        public Task<List<StudyGroup>> SearchStudyGroups(Subject subject)
         {
-            throw new NotImplementedException();
+            var filteredGroups = StudyGroups
+                .Where(sg => sg.Subject == subject)
+                .ToList();
+
+            return Task.FromResult(filteredGroups);
+        }
+
+        public Task<bool> IsUserInStudyGroupWithSubject(int userId, Subject subject)
+        {
+            return Task.FromResult(StudyGroups.Any(sg =>
+                sg.Subject == subject &&
+                sg.Users.Any(u => u.ID == userId)));
         }
     }
 }

@@ -1,19 +1,34 @@
+using Microsoft.OpenApi.Models;
 using TestApp.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers(); 
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IStudyGroupRepository, StudyGroupRepository>(); // Add your repository implementation
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "TestApp API",
+        Version = "v1",
+        Description = "API for TestApp study group management"
+    });
+
+});
+
+builder.Services.AddScoped<IStudyGroupRepository, StudyGroupRepository>();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TestApp API v1");
+        c.RoutePrefix = "swagger";
+    });
 }
 
 app.UseHttpsRedirection();

@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TestApp.Api.Controllers;
 using TestApp.Data.Repositories;
-using TestApp.Models;
 using TestApp.Enums;
+using TestApp.Models;
 
 namespace TestApp.Api.Tests
 {
@@ -64,7 +64,7 @@ namespace TestApp.Api.Tests
         [Test]
         public async Task SearchStudyGroups_ShouldReturnOkObjectResultWithFilteredStudyGroups()
         {
-            string subjectToSearch = "Mathematics";
+            var subjectToSearch = Subject.Math;
             var studyGroups = new List<StudyGroup>
             {
                 new StudyGroup(1, "Math Study", Subject.Math, DateTime.Now, new List<User>())
