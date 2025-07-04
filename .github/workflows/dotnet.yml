@@ -21,8 +21,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore src/TestingCommons.sln
+      run: dotnet restore src/TestApp.sln
     - name: Build
-      run: dotnet build src/TestingCommons.sln --no-restore
+      run: dotnet build src/TestApp.sln --no-restore
     - name: Test
-      run: dotnet test src/TestingCommons.sln --no-build --verbosity normal
+      run: dotnet test src/TestApp.sln --no-build --verbosity normal
