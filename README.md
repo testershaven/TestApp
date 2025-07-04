@@ -85,7 +85,8 @@ I did 2 extra main points for this homeassignment
 
 ## Out of scope
 
-I left 2 things out of scope but I would gladly discusss them in a 1on1 meeting 
+I left 3 things out of scope but I would gladly discusss them in a 1on1 meeting 
 
+ - Setup a msql server and a Migrations project
  - Was thinking on creating an ui application to connect to the api and do some e2e automated tests but seemed a bit out of scope
  - Dockerize the application, altought all tests and apps should be run inside a dockerized architecture to reduce the deltas with a production build, seemed a bit out of scope
