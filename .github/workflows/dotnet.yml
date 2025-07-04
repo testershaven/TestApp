@@ -23,6 +23,8 @@ jobs:
     - name: Create Results dir
       run: |
         mkdir src/Results
+    - name: Make upload script executable
+      run: chmod +x ./utils/uploadFiles.sh
     - name: Restore dependencies
       run: dotnet restore src/TestApp.sln
     - name: Build
