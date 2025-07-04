@@ -79,3 +79,13 @@ ORDER BY sg.CreateDate ASC;
 
 ## Extras for home assignment
 
+I did 2 extra main points for this homeassignment
+ - Run all the tests through a pipeline in github actions, those can be found in [HERE](https://github.com/testershaven/TestApp/actions)
+ - Mounted an allure server where all results are being stored, Ask me for the url and user and password
+
+## Out of scope
+
+I left 2 things out of scope but I would gladly discusss them in a 1on1 meeting 
+
+ - Was thinking on creating an ui application to connect to the api and do some e2e automated tests but seemed a bit out of scope
+ - Dockerize the application, altought all tests and apps should be run inside a dockerized architecture to reduce the deltas with a production build, seemed a bit out of scope
