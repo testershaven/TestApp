@@ -9,13 +9,6 @@ namespace TestApp.Data.Repositories
 
         public async Task CreateStudyGroup(StudyGroup studyGroup)
         {
-            foreach (var user in studyGroup.Users)
-            {
-                if (await IsUserInStudyGroupWithSubject(user.ID, studyGroup.Subject))
-                {
-                    throw new Exception($"User {user.ID} is already in a study group with subject {studyGroup.Subject}");
-                }
-            }
             StudyGroups.Add(studyGroup);
         }
 
@@ -28,12 +21,7 @@ namespace TestApp.Data.Repositories
         {
             var studyGroup = StudyGroups.FirstOrDefault(sg => sg.StudyGroupId == studyGroupId) ?? throw new ArgumentException($"Study group with ID {studyGroupId} not found");
 
-            if (await IsUserInStudyGroupWithSubject(userId, studyGroup.Subject))
-            {
-                throw new InvalidOperationException($"User {userId} is already in a study group with subject {studyGroup.Subject}");
-            }
-
-            var user = new User(userId, $"User {userId}"); // Assuming User has this constructor
+            var user = new User(userId, $"User {userId}");
 
             studyGroup.AddUser(user);
         }

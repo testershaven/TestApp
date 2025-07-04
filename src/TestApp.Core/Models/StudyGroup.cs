@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using TestApp.Enums;
 
 namespace TestApp.Models;
@@ -28,14 +29,11 @@ public class StudyGroup
         Users = users;
     }
 
-
-    //Some logic will be missing to validate values according to acceptance criteria, but imagine it is existing or do it yourself
-
     public int StudyGroupId { get; }
-
 
     public string Name { get; }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public Subject Subject { get; }
 
     public DateTime CreateDate { get; }

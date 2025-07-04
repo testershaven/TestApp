@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 
-builder.Services.AddScoped<IStudyGroupRepository, StudyGroupRepository>();
+builder.Services.AddSingleton<IStudyGroupRepository, StudyGroupRepository>();
 
 var app = builder.Build();
 
@@ -38,3 +38,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

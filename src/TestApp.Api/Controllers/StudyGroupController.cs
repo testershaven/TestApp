@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TestApp.Data.Repositories;
 using TestApp.Enums;
@@ -18,8 +19,15 @@ public class StudyGroupController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateStudyGroup(StudyGroup studyGroup)
+    public async Task<IActionResult> CreateStudyGroup([FromBody] StudyGroup studyGroup)
     {
+        foreach (var user in studyGroup.Users)
+        {
+            if (await _studyGroupRepository.IsUserInStudyGroupWithSubject(user.ID, studyGroup.Subject))
+            {
+                throw new BadHttpRequestException($"User {user.ID} is already in a study group with subject {studyGroup.Subject}");
+            }
+        }
         await _studyGroupRepository.CreateStudyGroup(studyGroup);
 
         return new OkResult();
@@ -44,6 +52,13 @@ public class StudyGroupController : ControllerBase
     [HttpPatch("join")]
     public async Task<IActionResult> JoinStudyGroup(int studyGroupId, int userId)
     {
+        var studyGroup = _studyGroupRepository.GetStudyGroups().Result.First(sg => sg.StudyGroupId.Equals(studyGroupId));
+
+        if (await _studyGroupRepository.IsUserInStudyGroupWithSubject(userId, studyGroup.Subject))
+        {
+            throw new BadHttpRequestException($"User {userId} is already in a study group with subject {studyGroup.Subject}");
+        }
+
         await _studyGroupRepository.JoinStudyGroup(studyGroupId, userId);
 
         return new OkResult();

@@ -2,7 +2,7 @@ using TestApp.Data.Repositories;
 using TestApp.Enums;
 using TestApp.Models;
 
-namespace TestApp.Data.Tests
+namespace TestApp.UnitTests
 {
     [TestFixture]
     public class StudyGroupRepositoryTests
@@ -59,27 +59,6 @@ namespace TestApp.Data.Tests
         }
 
         [Test]
-        public async Task CreateStudyGroup_UserAlreadyInGroupWithSubject_ThrowsException()
-        {
-            // Arrange
-            await _repository.CreateStudyGroup(_mathGroup);
-
-            var newMathGroup = new StudyGroup(
-                studyGroupId: 3,
-                name: "Another Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: new List<User> { _user1 }  // Same user as in _mathGroup
-            );
-
-            // Act & Assert
-            var ex = Assert.ThrowsAsync<Exception>(async () =>
-                await _repository.CreateStudyGroup(newMathGroup));
-
-            Assert.That(ex.Message, Does.Contain($"User {_user1.ID} is already in a study group with subject {Subject.Math}"));
-        }
-
-        [Test]
         public async Task GetStudyGroups_ReturnsAllGroups()
         {
             // Arrange
@@ -111,33 +90,6 @@ namespace TestApp.Data.Tests
 
             Assert.AreEqual(2, group.Users.Count);
             Assert.IsTrue(group.Users.Any(u => u.ID == newUserId));
-        }
-
-        [Test]
-        public async Task JoinStudyGroup_UserAlreadyInGroupWithSubject_ThrowsException()
-        {
-            // Arrange
-            await _repository.CreateStudyGroup(_mathGroup);
-            await _repository.CreateStudyGroup(_physicsGroup);
-
-            // First join should succeed
-            await _repository.JoinStudyGroup(_mathGroup.StudyGroupId, 3);
-
-            // Try to join another math group with same user
-            var anotherMathGroup = new StudyGroup(
-                studyGroupId: 4,
-                name: "Another Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: new List<User>()
-            );
-
-            await _repository.CreateStudyGroup(anotherMathGroup);
-
-            var ex2 = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await _repository.JoinStudyGroup(anotherMathGroup.StudyGroupId, 3));
-
-            Assert.That(ex2.Message, Does.Contain("already in a study group with subject"));
         }
 
         [Test]

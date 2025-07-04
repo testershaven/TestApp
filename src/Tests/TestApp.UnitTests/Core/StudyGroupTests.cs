@@ -1,7 +1,7 @@
 using TestApp.Enums;
 using TestApp.Models;
 
-namespace TestApp.Core.Tests
+namespace TestApp.UnitTests.Core
 {
     public class StudyGroupTests
     {
