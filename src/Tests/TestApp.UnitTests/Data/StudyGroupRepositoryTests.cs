@@ -25,7 +25,7 @@ namespace TestApp.UnitTests
                 name: "Math Study Group",
                 subject: Subject.Math,
                 createDate: DateTime.Now,
-                users: new List<User> { _user1 }
+                users: [_user1]
             );
 
             _physicsGroup = new StudyGroup(
@@ -33,45 +33,39 @@ namespace TestApp.UnitTests
                 name: "Physics Study Group",
                 subject: Subject.Physics,
                 createDate: DateTime.Now,
-                users: new List<User> { _user2 }
+                users: [_user2]
             );
         }
 
         [Test]
         public async Task CreateStudyGroup_AddsGroupToRepository()
         {
-            // Arrange
             var chemistryGroup = new StudyGroup(
                 studyGroupId: 3,
                 name: "Chemistry Study Group",
                 subject: Subject.Chemistry,
                 createDate: DateTime.Now,
-                users: new List<User> { new User(3, "User 3") }
+                users: [new User(3, "User 3")]
             );
 
-            // Act
             await _repository.CreateStudyGroup(chemistryGroup);
             var groups = await _repository.GetStudyGroups();
 
-            // Assert
-            Assert.AreEqual(1, groups.Count);
-            Assert.AreEqual(chemistryGroup.StudyGroupId, groups[0].StudyGroupId);
+            Assert.That(groups.Count, Is.EqualTo(1));
+            Assert.That(groups[0].StudyGroupId, Is.EqualTo(chemistryGroup.StudyGroupId));
         }
 
         [Test]
         public async Task GetStudyGroups_ReturnsAllGroups()
         {
-            // Arrange
             await _repository.CreateStudyGroup(_mathGroup);
             await _repository.CreateStudyGroup(_physicsGroup);
 
-            // Act
             var groups = await _repository.GetStudyGroups();
 
-            // Assert
-            Assert.AreEqual(2, groups.Count);
-            Assert.IsTrue(groups.Any(g => g.StudyGroupId == _mathGroup.StudyGroupId));
-            Assert.IsTrue(groups.Any(g => g.StudyGroupId == _physicsGroup.StudyGroupId));
+            Assert.That(groups.Count, Is.EqualTo(2));
+            Assert.That(groups.Any(g => g.StudyGroupId == _mathGroup.StudyGroupId));
+            Assert.That(groups.Any(g => g.StudyGroupId == _physicsGroup.StudyGroupId));
         }
 
         [Test]
@@ -88,17 +82,15 @@ namespace TestApp.UnitTests
             var groups = await _repository.GetStudyGroups();
             var group = groups.First(g => g.StudyGroupId == _mathGroup.StudyGroupId);
 
-            Assert.AreEqual(2, group.Users.Count);
-            Assert.IsTrue(group.Users.Any(u => u.ID == newUserId));
+            Assert.That(group.Users.Count, Is.EqualTo(2));
+            Assert.That(group.Users.Any(u => u.ID == newUserId), Is.True);
         }
 
         [Test]
         public async Task JoinStudyGroup_GroupNotFound_ThrowsException()
         {
-            // Arrange
             int nonExistentGroupId = 999;
 
-            // Act & Assert
             var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
                 await _repository.JoinStudyGroup(nonExistentGroupId, 1));
 
@@ -108,27 +100,22 @@ namespace TestApp.UnitTests
         [Test]
         public async Task LeaveStudyGroup_RemovesUserFromGroup()
         {
-            // Arrange
             await _repository.CreateStudyGroup(_mathGroup);
 
-            // Act
             await _repository.LeaveStudyGroup(_mathGroup.StudyGroupId, _user1.ID);
 
-            // Assert
             var groups = await _repository.GetStudyGroups();
             var group = groups.First(g => g.StudyGroupId == _mathGroup.StudyGroupId);
 
-            Assert.AreEqual(0, group.Users.Count);
-            Assert.IsFalse(group.Users.Any(u => u.ID == _user1.ID));
+            Assert.That(group.Users.Count, Is.EqualTo(0));
+            Assert.That(group.Users.Any(u => u.ID == _user1.ID), Is.False);
         }
 
         [Test]
         public async Task LeaveStudyGroup_GroupNotFound_ThrowsException()
         {
-            // Arrange
             int nonExistentGroupId = 999;
 
-            // Act & Assert
             var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
                 await _repository.LeaveStudyGroup(nonExistentGroupId, 1));
 
@@ -138,11 +125,9 @@ namespace TestApp.UnitTests
         [Test]
         public async Task LeaveStudyGroup_UserNotInGroup_ThrowsException()
         {
-            // Arrange
             await _repository.CreateStudyGroup(_mathGroup);
             int nonMemberUserId = 999;
 
-            // Act & Assert
             var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
                 await _repository.LeaveStudyGroup(_mathGroup.StudyGroupId, nonMemberUserId));
 
@@ -152,73 +137,62 @@ namespace TestApp.UnitTests
         [Test]
         public async Task SearchStudyGroupsBySubject_ReturnsMatchingGroups()
         {
-            // Arrange
             await _repository.CreateStudyGroup(_mathGroup);
             await _repository.CreateStudyGroup(_physicsGroup);
 
-            // Act
             var mathGroups = await _repository.SearchStudyGroups(Subject.Math);
             var physicsGroups = await _repository.SearchStudyGroups(Subject.Physics);
             var chemistryGroups = await _repository.SearchStudyGroups(Subject.Chemistry);
 
             // Assert
-            Assert.AreEqual(1, mathGroups.Count);
-            Assert.AreEqual(_mathGroup.StudyGroupId, mathGroups[0].StudyGroupId);
+            Assert.That(mathGroups.Count, Is.EqualTo(1));
+            Assert.That(mathGroups[0].StudyGroupId, Is.EqualTo(_mathGroup.StudyGroupId));
 
-            Assert.AreEqual(1, physicsGroups.Count);
-            Assert.AreEqual(_physicsGroup.StudyGroupId, physicsGroups[0].StudyGroupId);
+            Assert.That(physicsGroups.Count, Is.EqualTo(1));
+            Assert.That(physicsGroups[0].StudyGroupId, Is.EqualTo(_physicsGroup.StudyGroupId));
 
-            Assert.AreEqual(0, chemistryGroups.Count);
+            Assert.That(chemistryGroups.Count, Is.EqualTo(0));
         }
 
         [Test]
         public async Task SearchStudyGroupsByString_ReturnsMatchingGroups()
         {
-            // Arrange
             await _repository.CreateStudyGroup(_mathGroup);
             await _repository.CreateStudyGroup(_physicsGroup);
 
-            // Act
             var mathGroups = await _repository.SearchStudyGroups(Subject.Math);
             var physicsGroups = await _repository.SearchStudyGroups(Subject.Physics);
             var chemistryGroups = await _repository.SearchStudyGroups(Subject.Chemistry);
 
-            // Assert
-            Assert.AreEqual(1, mathGroups.Count);
-            Assert.AreEqual(_mathGroup.StudyGroupId, mathGroups[0].StudyGroupId);
+            Assert.That(mathGroups.Count, Is.EqualTo(1));
+            Assert.That(mathGroups[0].StudyGroupId, Is.EqualTo(_mathGroup.StudyGroupId));
 
-            Assert.AreEqual(1, physicsGroups.Count);
-            Assert.AreEqual(_physicsGroup.StudyGroupId, physicsGroups[0].StudyGroupId);
+            Assert.That(physicsGroups.Count, Is.EqualTo(1));
+            Assert.That(physicsGroups[0].StudyGroupId, Is.EqualTo(_physicsGroup.StudyGroupId));
 
-            Assert.AreEqual(0, chemistryGroups.Count);
+            Assert.That(chemistryGroups.Count, Is.EqualTo(0));
         }
 
         [Test]
         public async Task IsUserInStudyGroupWithSubject_ReturnsTrueForExistingUser()
         {
-            // Arrange
             await _repository.CreateStudyGroup(_mathGroup);
 
-            // Act
             var result = await _repository.IsUserInStudyGroupWithSubject(_user1.ID, Subject.Math);
 
-            // Assert
-            Assert.IsTrue(result);
+            Assert.That(result);
         }
 
         [Test]
         public async Task IsUserInStudyGroupWithSubject_ReturnsFalseForNonExistingUser()
         {
-            // Arrange
             await _repository.CreateStudyGroup(_mathGroup);
 
-            // Act
             var result = await _repository.IsUserInStudyGroupWithSubject(_user1.ID, Subject.Physics);
             var result2 = await _repository.IsUserInStudyGroupWithSubject(999, Subject.Math);
 
-            // Assert
-            Assert.IsFalse(result);
-            Assert.IsFalse(result2);
+            Assert.That(result, Is.False);
+            Assert.That(result2, Is.False);
         }
     }
 }

@@ -49,20 +49,20 @@ namespace TestApp.ComponentTests
                 users: new List<User> { new User(1, "Test User") }
             );
 
-            // Act - Create a new study group
+            // Create a new study group
             var createResponse = await _client.PostAsJsonAsync("/api/studygroup", newStudyGroup);
 
-            // Assert - Response should be successful
+            // Response should be successful
             Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-            // Act - Get all study groups
+            // Get all study groups
             var getResponse = await _client.GetAsync("/api/studygroup");
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - Response should be successful and contain the created group
+            // Response should be successful and contain the created group
             Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups.Count, Is.EqualTo(1));
+            Assert.That(returnedGroups, Has.Count.EqualTo(1));
             Assert.That(returnedGroups[0].Name, Is.EqualTo("Math Study Group"));
             Assert.That(returnedGroups[0].Subject, Is.EqualTo(Subject.Math));
         }
@@ -70,7 +70,6 @@ namespace TestApp.ComponentTests
         [Test]
         public async Task CreateStudyGroup_ThenSearchBySubject_ShouldReturnMatchingGroup()
         {
-            // Arrange
             var mathGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Math Study Group",
@@ -87,63 +86,63 @@ namespace TestApp.ComponentTests
                 users: new List<User>()
             );
 
-            // Act - Create two study groups
+            // Create two study groups
             await _client.PostAsJsonAsync("/api/studygroup", mathGroup);
             await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
 
-            // Act - Search for math groups
+            // Search for math groups
             var searchResponse = await _client.GetAsync("/api/studygroup/search?subject=Math");
             var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - Should return only math group
+            // Should return only math group
             Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups.Count, Is.EqualTo(1));
+            Assert.That(returnedGroups, Has.Count.EqualTo(1));
             Assert.That(returnedGroups[0].Subject, Is.EqualTo(Subject.Math));
         }
 
         [Test]
         public async Task JoinStudyGroup_ShouldAddUserToGroup()
         {
-            // Arrange - Create a study group
+            // Create a study group
             var studyGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Chemistry Study Group",
                 subject: Subject.Chemistry,
                 createDate: DateTime.Now,
-                users: new List<User>()
+                users: []
             );
             await _client.PostAsJsonAsync("/api/studygroup", studyGroup);
 
             int userId = 5;
 
-            // Act - Join the study group
+            // Join the study group
             var joinResponse = await _client.PatchAsync(
                 $"/api/studygroup/join?studyGroupId=1&userId={userId}",
                 null);
 
-            // Assert - Response should be successful
+            // Response should be successful
             Assert.That(joinResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-            // Act - Get the updated study groups
+            // Get the updated study groups
             var getResponse = await _client.GetAsync("/api/studygroup");
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - User should be in the group
-            Assert.That(returnedGroups[0].Users.Count, Is.EqualTo(1));
+            // User should be in the group
+            Assert.That(returnedGroups[0].Users, Has.Count.EqualTo(1));
             Assert.That(returnedGroups[0].Users[0].ID, Is.EqualTo(userId));
         }
 
         [Test]
         public async Task JoinStudyGroup_ThenLeaveStudyGroup_ShouldRemoveUserFromGroup()
         {
-            // Arrange - Create a study group
+            // Create a study group
             var studyGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Chemistry Study Group",
                 subject: Subject.Chemistry,
                 createDate: DateTime.Now,
-                users: new List<User>()
+                users: []
             );
             await _client.PostAsJsonAsync("/api/studygroup", studyGroup);
 
@@ -167,7 +166,7 @@ namespace TestApp.ComponentTests
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
             // Assert - User should no longer be in the group
-            Assert.That(returnedGroups[0].Users.Count, Is.EqualTo(0));
+            Assert.That(returnedGroups[0].Users, Is.Empty);
         }
 
         [Test]
@@ -180,7 +179,7 @@ namespace TestApp.ComponentTests
                 name: "First Math Group",
                 subject: Subject.Math,
                 createDate: DateTime.Now,
-                users: new List<User> { user }
+                users: [user]
             );
             await _client.PostAsJsonAsync("/api/studygroup", mathGroup1);
 
@@ -190,7 +189,7 @@ namespace TestApp.ComponentTests
                 name: "Second Math Group",
                 subject: Subject.Math,
                 createDate: DateTime.Now,
-                users: new List<User> { user }
+                users: [user]
             );
 
             // Act - Try to create another math group with the same user
@@ -202,7 +201,7 @@ namespace TestApp.ComponentTests
             // Verify only one group was created
             var getResponse = await _client.GetAsync("/api/studygroup");
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
-            Assert.That(returnedGroups.Count, Is.EqualTo(1));
+            Assert.That(returnedGroups, Has.Count.EqualTo(1));
         }
 
         [Test]
@@ -214,7 +213,7 @@ namespace TestApp.ComponentTests
                 name: "First Math Group",
                 subject: Subject.Math,
                 createDate: DateTime.Now,
-                users: new List<User>()
+                users: []
             );
 
             var mathGroup2 = new StudyGroup(
@@ -222,7 +221,7 @@ namespace TestApp.ComponentTests
                 name: "Second Math Group",
                 subject: Subject.Math,
                 createDate: DateTime.Now,
-                users: new List<User>()
+                users: []
             );
 
             await _client.PostAsJsonAsync("/api/studygroup", mathGroup1);
@@ -235,12 +234,12 @@ namespace TestApp.ComponentTests
                 $"/api/studygroup/join?studyGroupId=1&userId={userId}",
                 null);
 
-            // Act - Try to join the second math group
+            // Try to join the second math group
             var joinResponse = await _client.PatchAsync(
                 $"/api/studygroup/join?studyGroupId=2&userId={userId}",
                 null);
 
-            // Assert - Should fail because user is already in a math group
+            // Should fail because user is already in a math group
             Assert.That(joinResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         }
     }

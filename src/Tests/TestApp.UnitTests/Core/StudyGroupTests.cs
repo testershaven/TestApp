@@ -12,7 +12,7 @@ namespace TestApp.UnitTests.Core
             string name = "Test Group";
             Subject subject = Subject.Chemistry;
             DateTime createDate = DateTime.Now;
-            List<User> users = new List<User>();
+            List<User> users = [];
 
             var studyGroup = new StudyGroup(id, name, subject, createDate, users);
 
