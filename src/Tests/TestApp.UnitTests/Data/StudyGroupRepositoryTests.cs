@@ -198,5 +198,16 @@ namespace TestApp.UnitTests
             Assert.That(result, Is.False);
             Assert.That(result2, Is.False);
         }
+
+        [Test]
+        [AllureDescription("Verify searching an empty repository returns empty list")]
+        public async Task SearchStudyGroups_EmptyRepository_ReturnsEmptyList()
+        {
+            // Act
+            var mathGroups = await _repository.SearchStudyGroups(Subject.Math);
+            
+            // Assert
+            Assert.That(mathGroups, Is.Empty);
+        }
     }
 }
