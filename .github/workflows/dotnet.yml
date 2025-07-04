@@ -24,5 +24,7 @@ jobs:
       run: dotnet restore src/TestApp.sln
     - name: Build
       run: dotnet build src/TestApp.sln --no-restore
-    - name: Test
-      run: dotnet test src/TestApp.sln --no-build --verbosity normal
+    - name: Unit Tests
+      run: dotnet test src/Tests/TestApp.UnitTests/TestApp.UnitTests.csproj --no-build --verbosity normal
+    - name: Component Tests
+      run: dotnet test src/Tests/TestApp.ComponentTests/TestApp.ComponentTests.csproj --no-build --verbosity normal
