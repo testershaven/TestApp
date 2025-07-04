@@ -1,0 +1,5 @@
+{
+  "allure": {
+    "directory": "../../../../../Results/unit-allure-results"
+  }
+}

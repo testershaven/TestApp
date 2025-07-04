@@ -1,0 +1,5 @@
+{
+  "allure": {
+    "directory": "../../../../../Results/component-allure-results"
+  }
+}
