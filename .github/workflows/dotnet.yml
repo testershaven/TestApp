@@ -20,6 +20,9 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - name: Create Results dir
+      run: |
+        mkdir src/Results
     - name: Restore dependencies
       run: dotnet restore src/TestApp.sln
     - name: Build
