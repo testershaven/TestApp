@@ -1,3 +1,4 @@
+using Allure.NUnit;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TestApp.Api.Controllers;
@@ -7,7 +8,7 @@ using TestApp.Models;
 
 namespace TestApp.UnitTests.Api
 {
-    [TestFixture]
+    [AllureNUnit]
     public class StudyGroupControllerTests
     {
         private Mock<IStudyGroupRepository> _mockRepository;

@@ -1,8 +1,10 @@
+using Allure.NUnit;
 using TestApp.Enums;
 using TestApp.Models;
 
 namespace TestApp.UnitTests.Core
 {
+    [AllureNUnit]
     public class StudyGroupTests
     {
         [Test]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Allure.NUnit;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
@@ -8,7 +9,7 @@ using TestApp.Models;
 
 namespace TestApp.ComponentTests
 {
-    [TestFixture]
+    [AllureNUnit]
     public class StudyGroupApiTests
     {
         private WebApplicationFactory<Program> _factory;

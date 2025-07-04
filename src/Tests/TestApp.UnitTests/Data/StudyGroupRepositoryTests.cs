@@ -1,10 +1,11 @@
+using Allure.NUnit;
 using TestApp.Data.Repositories;
 using TestApp.Enums;
 using TestApp.Models;
 
 namespace TestApp.UnitTests
 {
-    [TestFixture]
+    [AllureNUnit]   
     public class StudyGroupRepositoryTests
     {
         private StudyGroupRepository _repository;
