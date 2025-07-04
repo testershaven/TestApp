@@ -1,4 +1,5 @@
 ﻿using Allure.NUnit;
+using Allure.NUnit.Attributes;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
@@ -10,6 +11,9 @@ using TestApp.Models;
 namespace TestApp.ComponentTests
 {
     [AllureNUnit]
+    [AllureFeature("StudyGroup features")]
+    [AllureParentSuite("Component Tests")]
+
     public class StudyGroupApiTests
     {
         private WebApplicationFactory<Program> _factory;

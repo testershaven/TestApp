@@ -1,11 +1,14 @@
 using Allure.NUnit;
+using Allure.NUnit.Attributes;
 using TestApp.Data.Repositories;
 using TestApp.Enums;
 using TestApp.Models;
 
 namespace TestApp.UnitTests
 {
-    [AllureNUnit]   
+    [AllureNUnit]
+    [AllureFeature("StudyGroup features")]
+    [AllureParentSuite("Unit Tests")]
     public class StudyGroupRepositoryTests
     {
         private StudyGroupRepository _repository;

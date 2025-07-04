@@ -1,10 +1,14 @@
 using Allure.NUnit;
+using Allure.NUnit.Attributes;
 using TestApp.Enums;
 using TestApp.Models;
 
 namespace TestApp.UnitTests.Core
 {
     [AllureNUnit]
+    [AllureFeature("StudyGroup features")]
+    [AllureParentSuite("Unit Tests")]
+
     public class StudyGroupTests
     {
         [Test]

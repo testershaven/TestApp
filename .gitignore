@@ -18,7 +18,8 @@
 *.userprefs
 *-allure-results/
 allure-results/
-
+component-allure-results.json
+unit-allure-results.json
 # Mono auto generated files
 mono_crash.*
 

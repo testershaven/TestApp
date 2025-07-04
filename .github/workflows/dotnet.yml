@@ -28,3 +28,7 @@ jobs:
       run: dotnet test src/Tests/TestApp.UnitTests/TestApp.UnitTests.csproj --no-build --verbosity normal
     - name: Component Tests
       run: dotnet test src/Tests/TestApp.ComponentTests/TestApp.ComponentTests.csproj --no-build --verbosity normal
+    - name: Upload Unit Tests
+      run: ./utils/uploadFiles.sh   -u ${{ secrets.ALLUREURL }} -r "../src/Results/unit-allure-results"   -o "unit-allure-results.json" -U ${{ secrets.ALLUREUSER }} -P ${{ secrets.ALLUREPASSWORD }} 
+    - name: Upload Component Tests
+      run: ./utils/uploadFiles.sh   -u ${{ secrets.ALLUREURL }}  -r "../src/Results/component-allure-results"   -o "component-allure-results.json"  -U ${{ secrets.ALLUREUSER }} -P ${{ secrets.ALLUREPASSWORD }} 

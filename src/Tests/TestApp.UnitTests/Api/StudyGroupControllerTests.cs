@@ -1,4 +1,5 @@
 using Allure.NUnit;
+using Allure.NUnit.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TestApp.Api.Controllers;
@@ -9,6 +10,8 @@ using TestApp.Models;
 namespace TestApp.UnitTests.Api
 {
     [AllureNUnit]
+    [AllureFeature("StudyGroup features")]
+    [AllureParentSuite("Unit Tests")]
     public class StudyGroupControllerTests
     {
         private Mock<IStudyGroupRepository> _mockRepository;
