@@ -4,7 +4,7 @@ This is the repository that holds the solution for the home assignment provided,
 
 ## Thoght proccess
 
-When I read the home assignment and understanding Testing as a practice that is determinatory, that means that fail/pass are the only outputs possible, I decided to be more opinionated on how the App should work, so I decided that I would create a .net WebApi containing the classes provided with the logic necessary, the only thing that I left outside for the sake of the Assignment is to create the SQL database with its corresponding migrations. 
+When I read the home assignment and understanding Testing as a practice that is determinatory, that means that fail/pass are the only outputs possible, I decided to be more opinionated on how the App should work, so I decided that I would create a .net WebApi containing the classes provided in the home assignmet with the logic necessary, the only thing that I left outside for the sake of the Assignment is to create the SQL database with its corresponding migrations, and followed an InMemory approach
 
 ## General structure of repository
 
