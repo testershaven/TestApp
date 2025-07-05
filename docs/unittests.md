@@ -6,7 +6,7 @@ As its by nature all Unit tests are mandatorily run as an automated regression, 
 
 This unit tests are self explanatory by name and steps can be seen in their respective test classes, detailing here would be an unnecesary duplication of information 
 
-For the `StudyGroupController` class in the TestApp.Api project, I created the `StudyGroupControllerTests` with the following tests:
+For the [StudyGroupController](../src/TestApp.Api/Controllers/StudyGroupController.cs) class in the TestApp.Api project, I created the [StudyGroupControllerTests](../src/Tests/TestApp.UnitTests/Api/StudyGroupControllerTests.cs) with the following tests:
  - CreateStudyGroup_ShouldReturnOkResult
  - GetStudyGroups_ShouldReturnOkObjectResultWithStudyGroups
  - SearchStudyGroups_ShouldReturnOkObjectResultWithFilteredStudyGroups
@@ -16,7 +16,7 @@ For the `StudyGroupController` class in the TestApp.Api project, I created the `
  - JoinStudyGroup_UserAlreadyInStudyGroupWithSubject_ShouldThrowBadHttpRequestException
  - JoinStudyGroup_StudyGroupNotFound_ShouldHandleException
 
-For the `StudyGroup` class in the TestApp.Core project, I created the `StudyGroupTests` with the following tests:
+For the [StudyGroup](../src/TestApp.Core/Models/StudyGroup.cs) class in the TestApp.Core project, I created the [StudyGroupTests](../src/Tests/TestApp.UnitTests/Core/StudyGroupTests.cs) with the following tests:
 
 - Constructor_ValidParameters_CreatesInstance
 - Constructor_NullName_ThrowsArgumentNullException
@@ -28,7 +28,7 @@ For the `StudyGroup` class in the TestApp.Core project, I created the `StudyGrou
 - Constructor_SpecificDateTime_AssignsCorrectly
 - RemoveUser_UserNotInList_ReturnsFalse
 
-For the `StudyGroupRepository` class in the TestApp.Core project, I created the `StudyGroupRepositoryTests` class with the following tests:
+For the [StudyGroupRepository](../src/TestApp.Data/Repositories/StudyGroupRepository.cs) class in the TestApp.Core project, I created the [StudyGroupRepositoryTests](../src/Tests/TestApp.UnitTests/Data/StudyGroupRepositoryTests.cs) class with the following tests:
 
 - CreateStudyGroup_AddsGroupToRepository
 - GetStudyGroups_ReturnsAllGroups

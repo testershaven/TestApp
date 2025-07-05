@@ -75,6 +75,7 @@ WHERE EXISTS (
     AND u.Name LIKE 'M%'
 )
 ORDER BY sg.CreateDate ASC;
+-- It was not defined if the order should be ASC or DESC
 ```
 
 ## Extras for home assignment
@@ -82,6 +83,7 @@ ORDER BY sg.CreateDate ASC;
 I did 2 extra main points for this homeassignment
  - Run all the tests through a pipeline in github actions, those can be found in [HERE](https://github.com/testershaven/TestApp/actions)
  - Mounted an allure server where all results are being stored, Ask me for the url and user and password
+ - Created a bash script to upload results into the allure server
 
 ## Out of scope
 
