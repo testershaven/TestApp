@@ -80,7 +80,7 @@ ORDER BY sg.CreateDate ASC;
 
 ## Extras for home assignment
 
-I did 2 extra main points for this homeassignment
+I did 3 extra main points for this homeassignment
  - Run all the tests through a pipeline in github actions, those can be found in [HERE](https://github.com/testershaven/TestApp/actions)
  - Mounted an allure server where all results are being stored, I added some documentation [HERE](./docs/allureserver.md)
  - Created a bash script to upload results into the allure server [HERE](./utils/uploadFiles.sh)
