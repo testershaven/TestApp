@@ -17,4 +17,4 @@ To access it:
 
 ## Tech Stack
 
-For setting it up I used the containerized allure server that you can find here [fescobar/allure-docker-service](https://github.com/fescobar/allure-docker-service) and another container for the UI [fescobar/allure-docker-service-ui](https://github.com/fescobar/allure-docker-service-ui), all ran in fly.io servers
+For setting it up I used the containerized allure server that you can find here [fescobar/allure-docker-service](https://github.com/fescobar/allure-docker-service) and another container for the UI [fescobar/allure-docker-service-ui](https://github.com/fescobar/allure-docker-service-ui), all ran in fly.io servers and finally i configured dns and certificates to run it under my domain.
