@@ -34,18 +34,25 @@ public class StudyGroupController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> SearchStudyGroups(Subject? subject = null)
+    public async Task<IActionResult> SearchStudyGroups(Subject? subject = null, string sortOrder = "asc")
     {
+        IEnumerable<StudyGroup> studyGroups;
+        
         if (subject.HasValue)
         {
-            var filteredStudyGroups = await _studyGroupRepository.SearchStudyGroups(subject.Value);
-            return new OkObjectResult(filteredStudyGroups);
+            studyGroups = await _studyGroupRepository.SearchStudyGroups(subject.Value);
         }
         else
         {
-            var allStudyGroups = await _studyGroupRepository.GetStudyGroups();
-            return new OkObjectResult(allStudyGroups);
+            studyGroups = await _studyGroupRepository.GetStudyGroups();
         }
+
+        // Sort by creation date
+        studyGroups = sortOrder?.ToLower() == "desc" 
+            ? studyGroups.OrderByDescending(sg => sg.CreateDate)
+            : studyGroups.OrderBy(sg => sg.CreateDate);
+            
+        return new OkObjectResult(studyGroups);
     }
 
     [HttpPatch("join")]

@@ -243,5 +243,127 @@ namespace TestApp.UnitTests.Api
             _mockRepository.Verify(repo => repo.IsUserInStudyGroupWithSubject(It.IsAny<int>(), It.IsAny<Subject>()), Times.Never);
             _mockRepository.Verify(repo => repo.JoinStudyGroup(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         }
+
+        [Test]
+        [AllureDescription("Test searching for study groups with ascending sort order")]
+        public async Task SearchStudyGroups_WithAscendingSortOrder_ShouldReturnSortedGroups()
+        {
+            // Arrange
+            var olderDate = new DateTime(2023, 1, 1);
+            var newerDate = new DateTime(2023, 2, 1);
+            
+            var studyGroups = new List<StudyGroup>
+            {
+                new(1, "Math Study", Subject.Math, newerDate, new List<User>()),
+                new(2, "Physics Group", Subject.Physics, olderDate, new List<User>())
+            };
+
+            _mockRepository.Setup(repo => repo.GetStudyGroups())
+                .ReturnsAsync(studyGroups);
+
+            // Act
+            var result = await _controller.SearchStudyGroups(null, "asc");
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            var okResult = result as OkObjectResult;
+            var returnedGroups = okResult?.Value as IEnumerable<StudyGroup>;
+            Assert.That(returnedGroups, Is.Not.Null);
+            
+            var groupsList = returnedGroups?.ToList();
+            Assert.That(groupsList?.Count, Is.EqualTo(2));
+            
+            // First item should be the oldest (with olderDate)
+            Assert.That(groupsList?[0].CreateDate, Is.EqualTo(olderDate));
+            Assert.That(groupsList?[0].StudyGroupId, Is.EqualTo(2));
+            
+            // Second item should be the newest (with newerDate)
+            Assert.That(groupsList?[1].CreateDate, Is.EqualTo(newerDate));
+            Assert.That(groupsList?[1].StudyGroupId, Is.EqualTo(1));
+            
+            _mockRepository.Verify(repo => repo.GetStudyGroups(), Times.Once);
+        }
+
+        [Test]
+        [AllureDescription("Test searching for study groups with descending sort order")]
+        public async Task SearchStudyGroups_WithDescendingSortOrder_ShouldReturnSortedGroups()
+        {
+            // Arrange
+            var olderDate = new DateTime(2023, 1, 1);
+            var newerDate = new DateTime(2023, 2, 1);
+            
+            var studyGroups = new List<StudyGroup>
+            {
+                new(1, "Math Study", Subject.Math, newerDate, new List<User>()),
+                new(2, "Physics Group", Subject.Physics, olderDate, new List<User>())
+            };
+
+            _mockRepository.Setup(repo => repo.GetStudyGroups())
+                .ReturnsAsync(studyGroups);
+
+            // Act
+            var result = await _controller.SearchStudyGroups(null, "desc");
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            var okResult = result as OkObjectResult;
+            var returnedGroups = okResult?.Value as IEnumerable<StudyGroup>;
+            Assert.That(returnedGroups, Is.Not.Null);
+            
+            var groupsList = returnedGroups?.ToList();
+            Assert.That(groupsList?.Count, Is.EqualTo(2));
+            
+            // First item should be the newest (with newerDate)
+            Assert.That(groupsList?[0].CreateDate, Is.EqualTo(newerDate));
+            Assert.That(groupsList?[0].StudyGroupId, Is.EqualTo(1));
+            
+            // Second item should be the oldest (with olderDate)
+            Assert.That(groupsList?[1].CreateDate, Is.EqualTo(olderDate));
+            Assert.That(groupsList?[1].StudyGroupId, Is.EqualTo(2));
+            
+            _mockRepository.Verify(repo => repo.GetStudyGroups(), Times.Once);
+        }
+
+        [Test]
+        [AllureDescription("Test searching for study groups with subject and sort order")]
+        public async Task SearchStudyGroups_WithSubjectAndSortOrder_ShouldReturnSortedFilteredGroups()
+        {
+            // Arrange
+            var olderDate = new DateTime(2023, 1, 1);
+            var newerDate = new DateTime(2023, 2, 1);
+            var subjectToSearch = Subject.Math;
+            
+            var studyGroups = new List<StudyGroup>
+            {
+                new(1, "Advanced Math", Subject.Math, newerDate, new List<User>()),
+                new(2, "Basic Math", Subject.Math, olderDate, new List<User>())
+            };
+
+            _mockRepository.Setup(repo => repo.SearchStudyGroups(subjectToSearch))
+                .ReturnsAsync(studyGroups);
+
+            // Act - using descending order
+            var result = await _controller.SearchStudyGroups(subjectToSearch, "desc");
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            var okResult = result as OkObjectResult;
+            var returnedGroups = okResult?.Value as IEnumerable<StudyGroup>;
+            Assert.That(returnedGroups, Is.Not.Null);
+            
+            var groupsList = returnedGroups?.ToList();
+            Assert.That(groupsList?.Count, Is.EqualTo(2));
+            
+            // First item should be the newest (with newerDate)
+            Assert.That(groupsList?[0].CreateDate, Is.EqualTo(newerDate));
+            Assert.That(groupsList?[0].Name, Is.EqualTo("Advanced Math"));
+            
+            // Second item should be the oldest (with olderDate)
+            Assert.That(groupsList?[1].CreateDate, Is.EqualTo(olderDate));
+            Assert.That(groupsList?[1].Name, Is.EqualTo("Basic Math"));
+            
+            _mockRepository.Verify(repo => repo.SearchStudyGroups(subjectToSearch), Times.Once);
+            _mockRepository.Verify(repo => repo.GetStudyGroups(), Times.Never);
+        }
     }
 }

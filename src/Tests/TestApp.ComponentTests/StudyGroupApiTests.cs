@@ -303,5 +303,157 @@ namespace TestApp.ComponentTests
             CollectionAssert.Contains(subjects, Subject.Physics);
             CollectionAssert.Contains(subjects, Subject.Chemistry);
         }
+
+        [Test]
+        [AllureDescription("Test sorting study groups by creation date in ascending order")]
+        public async Task SearchStudyGroups_WithAscendingSort_ShouldReturnOrderedGroups()
+        {
+            // Arrange - Create study groups with different creation dates
+            var oldestGroup = new StudyGroup(
+                studyGroupId: 1,
+                name: "Oldest Group",
+                subject: Subject.Math,
+                createDate: DateTime.Now.AddDays(-10), // 10 days ago
+                users: []
+            );
+
+            var middleGroup = new StudyGroup(
+                studyGroupId: 2,
+                name: "Middle Group",
+                subject: Subject.Physics,
+                createDate: DateTime.Now.AddDays(-5), // 5 days ago
+                users: []
+            );
+
+            var newestGroup = new StudyGroup(
+                studyGroupId: 3,
+                name: "Newest Group",
+                subject: Subject.Chemistry,
+                createDate: DateTime.Now, // today
+                users: []
+            );
+
+            // Create three study groups
+            await _client.PostAsJsonAsync("/api/studygroup", oldestGroup);
+            await _client.PostAsJsonAsync("/api/studygroup", newestGroup); // Intentionally out of order
+            await _client.PostAsJsonAsync("/api/studygroup", middleGroup);
+
+            // Act - Search with ascending sort
+            var searchResponse = await _client.GetAsync("/api/studygroup?sortOrder=asc");
+            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+
+            // Assert - Should return groups in ascending order by creation date
+            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(returnedGroups, Is.Not.Null);
+            Assert.That(returnedGroups, Has.Count.EqualTo(3));
+            
+            // Check the order is correct
+            Assert.That(returnedGroups?[0].Name, Is.EqualTo("Oldest Group"));
+            Assert.That(returnedGroups?[1].Name, Is.EqualTo("Middle Group"));
+            Assert.That(returnedGroups?[2].Name, Is.EqualTo("Newest Group"));
+        }
+
+        [Test]
+        [AllureDescription("Test sorting study groups by creation date in descending order")]
+        public async Task SearchStudyGroups_WithDescendingSort_ShouldReturnOrderedGroups()
+        {
+            // Arrange - Create study groups with different creation dates
+            var oldestGroup = new StudyGroup(
+                studyGroupId: 1,
+                name: "Oldest Group",
+                subject: Subject.Math,
+                createDate: DateTime.Now.AddDays(-10), // 10 days ago
+                users: []
+            );
+
+            var middleGroup = new StudyGroup(
+                studyGroupId: 2,
+                name: "Middle Group",
+                subject: Subject.Physics,
+                createDate: DateTime.Now.AddDays(-5), // 5 days ago
+                users: []
+            );
+
+            var newestGroup = new StudyGroup(
+                studyGroupId: 3,
+                name: "Newest Group",
+                subject: Subject.Chemistry,
+                createDate: DateTime.Now, // today
+                users: []
+            );
+
+            // Create three study groups
+            await _client.PostAsJsonAsync("/api/studygroup", oldestGroup);
+            await _client.PostAsJsonAsync("/api/studygroup", newestGroup); // Intentionally out of order
+            await _client.PostAsJsonAsync("/api/studygroup", middleGroup);
+
+            // Act - Search with descending sort
+            var searchResponse = await _client.GetAsync("/api/studygroup?sortOrder=desc");
+            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+
+            // Assert - Should return groups in descending order by creation date
+            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(returnedGroups, Is.Not.Null);
+            Assert.That(returnedGroups, Has.Count.EqualTo(3));
+            
+            // Check the order is correct
+            Assert.That(returnedGroups?[0].Name, Is.EqualTo("Newest Group"));
+            Assert.That(returnedGroups?[1].Name, Is.EqualTo("Middle Group"));
+            Assert.That(returnedGroups?[2].Name, Is.EqualTo("Oldest Group"));
+        }
+
+        [Test]
+        [AllureDescription("Test sorting filtered study groups by creation date")]
+        public async Task SearchStudyGroups_WithSubjectAndSort_ShouldReturnFilteredOrderedGroups()
+        {
+            // Arrange - Create math study groups with different creation dates
+            var oldMathGroup = new StudyGroup(
+                studyGroupId: 1,
+                name: "Old Math Group",
+                subject: Subject.Math,
+                createDate: DateTime.Now.AddDays(-10), // 10 days ago
+                users: []
+            );
+
+            var newMathGroup = new StudyGroup(
+                studyGroupId: 2,
+                name: "New Math Group",
+                subject: Subject.Math,
+                createDate: DateTime.Now, // today
+                users: []
+            );
+
+            // Create a physics group to ensure filtering works
+            var physicsGroup = new StudyGroup(
+                studyGroupId: 3,
+                name: "Physics Group",
+                subject: Subject.Physics,
+                createDate: DateTime.Now.AddDays(-5), // 5 days ago
+                users: []
+            );
+
+            // Create study groups
+            await _client.PostAsJsonAsync("/api/studygroup", oldMathGroup);
+            await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
+            await _client.PostAsJsonAsync("/api/studygroup", newMathGroup);
+
+            // Act - Search with subject filter and descending sort
+            var searchResponse = await _client.GetAsync("/api/studygroup?subject=Math&sortOrder=desc");
+            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+
+            // Assert - Should return only math groups in descending order by creation date
+            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(returnedGroups, Is.Not.Null);
+            Assert.That(returnedGroups, Has.Count.EqualTo(2));
+            
+            // Check the order is correct and only math groups are returned
+            Assert.That(returnedGroups?[0].Name, Is.EqualTo("New Math Group"));
+            Assert.That(returnedGroups?[0].Subject, Is.EqualTo(Subject.Math));
+            Assert.That(returnedGroups?[1].Name, Is.EqualTo("Old Math Group"));
+            Assert.That(returnedGroups?[1].Subject, Is.EqualTo(Subject.Math));
+            
+            // Ensure physics group is not included
+            Assert.That(returnedGroups?.Any(g => g.Subject == Subject.Physics), Is.False);
+        }
     }
 }
