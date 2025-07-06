@@ -45,7 +45,6 @@ namespace TestApp.ComponentTests
         [Test]
         public async Task CreateStudyGroup_ThenGetStudyGroups_ShouldReturnCreatedGroup()
         {
-            // Arrange
             var newStudyGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Math Study Group",
@@ -54,7 +53,6 @@ namespace TestApp.ComponentTests
                 users: new List<User> { new User(1, "Test User") }
             );
 
-            // Create a new study group
             var createResponse = await _client.PostAsJsonAsync("/api/studygroup", newStudyGroup);
 
             // Response should be successful
@@ -161,19 +159,19 @@ namespace TestApp.ComponentTests
                 $"/api/studygroup/join?studyGroupId=1&userId={userId}",
                 null);
 
-            // Act - Leave the study group
+            // Leave the study group
             var leaveResponse = await _client.PatchAsync(
                 $"/api/studygroup/leave?studyGroupId=1&userId={userId}",
                 null);
 
-            // Assert - Response should be successful
+            // Response should be successful
             Assert.That(leaveResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-            // Act - Get the updated study groups
+            // Get the updated study groups
             var getResponse = await _client.GetAsync("/api/studygroup");
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - User should no longer be in the group
+            // User should no longer be in the group
             Assert.That(returnedGroups, Is.Not.Null);
             Assert.That(returnedGroups?.Count, Is.GreaterThan(0));
             Assert.That(returnedGroups?[0].Users, Is.Not.Null);
@@ -183,7 +181,7 @@ namespace TestApp.ComponentTests
         [Test]
         public async Task CreateStudyGroup_WithUserAlreadyInGroupWithSameSubject_ShouldFail()
         {
-            // Arrange - Create a study group with a user
+            // Create a study group with a user
             var user = new User(1, "Test User");
             var mathGroup1 = new StudyGroup(
                 studyGroupId: 1,
@@ -203,10 +201,10 @@ namespace TestApp.ComponentTests
                 users: [user]
             );
 
-            // Act - Try to create another math group with the same user
+            // Try to create another math group with the same user
             var createResponse = await _client.PostAsJsonAsync("/api/studygroup", mathGroup2);
 
-            // Assert - Should fail because user is already in a math group
+            // Should fail because user is already in a math group
             Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
 
             // Verify only one group was created
@@ -218,7 +216,7 @@ namespace TestApp.ComponentTests
         [Test]
         public async Task JoinStudyGroup_UserAlreadyInGroupWithSameSubject_ShouldFail()
         {
-            // Arrange - Create two math groups
+            // Create two math groups
             var mathGroup1 = new StudyGroup(
                 studyGroupId: 1,
                 name: "First Math Group",
@@ -258,7 +256,7 @@ namespace TestApp.ComponentTests
         [AllureDescription("Test searching study groups without specifying a subject")]
         public async Task SearchStudyGroups_WithoutSubject_ShouldReturnAllGroups()
         {
-            // Arrange - Create study groups with different subjects
+            // Create study groups with different subjects
             var mathGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Math Study Group",
@@ -288,11 +286,11 @@ namespace TestApp.ComponentTests
             await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
             await _client.PostAsJsonAsync("/api/studygroup", chemistryGroup);
 
-            // Act - Search without specifying a subject
+            // Search without specifying a subject
             var searchResponse = await _client.GetAsync("/api/studygroup");
             var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - Should return all groups
+            // Should return all groups
             Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(returnedGroups, Is.Not.Null);
             Assert.That(returnedGroups, Has.Count.EqualTo(3));
@@ -308,7 +306,7 @@ namespace TestApp.ComponentTests
         [AllureDescription("Test sorting study groups by creation date in ascending order")]
         public async Task SearchStudyGroups_WithAscendingSort_ShouldReturnOrderedGroups()
         {
-            // Arrange - Create study groups with different creation dates
+            // Create study groups with different creation dates
             var oldestGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Oldest Group",
@@ -338,11 +336,11 @@ namespace TestApp.ComponentTests
             await _client.PostAsJsonAsync("/api/studygroup", newestGroup); // Intentionally out of order
             await _client.PostAsJsonAsync("/api/studygroup", middleGroup);
 
-            // Act - Search with ascending sort
+            // Search with ascending sort
             var searchResponse = await _client.GetAsync("/api/studygroup?sortOrder=asc");
             var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - Should return groups in ascending order by creation date
+            // Should return groups in ascending order by creation date
             Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(returnedGroups, Is.Not.Null);
             Assert.That(returnedGroups, Has.Count.EqualTo(3));
@@ -357,7 +355,7 @@ namespace TestApp.ComponentTests
         [AllureDescription("Test sorting study groups by creation date in descending order")]
         public async Task SearchStudyGroups_WithDescendingSort_ShouldReturnOrderedGroups()
         {
-            // Arrange - Create study groups with different creation dates
+            // Create study groups with different creation dates
             var oldestGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Oldest Group",
@@ -387,11 +385,11 @@ namespace TestApp.ComponentTests
             await _client.PostAsJsonAsync("/api/studygroup", newestGroup); // Intentionally out of order
             await _client.PostAsJsonAsync("/api/studygroup", middleGroup);
 
-            // Act - Search with descending sort
+            // Search with descending sort
             var searchResponse = await _client.GetAsync("/api/studygroup?sortOrder=desc");
             var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - Should return groups in descending order by creation date
+            // Should return groups in descending order by creation date
             Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(returnedGroups, Is.Not.Null);
             Assert.That(returnedGroups, Has.Count.EqualTo(3));
@@ -406,7 +404,7 @@ namespace TestApp.ComponentTests
         [AllureDescription("Test sorting filtered study groups by creation date")]
         public async Task SearchStudyGroups_WithSubjectAndSort_ShouldReturnFilteredOrderedGroups()
         {
-            // Arrange - Create math study groups with different creation dates
+            // Create math study groups with different creation dates
             var oldMathGroup = new StudyGroup(
                 studyGroupId: 1,
                 name: "Old Math Group",
@@ -437,11 +435,11 @@ namespace TestApp.ComponentTests
             await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
             await _client.PostAsJsonAsync("/api/studygroup", newMathGroup);
 
-            // Act - Search with subject filter and descending sort
+            // Search with subject filter and descending sort
             var searchResponse = await _client.GetAsync("/api/studygroup?subject=Math&sortOrder=desc");
             var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Assert - Should return only math groups in descending order by creation date
+            // Should return only math groups in descending order by creation date
             Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(returnedGroups, Is.Not.Null);
             Assert.That(returnedGroups, Has.Count.EqualTo(2));
