@@ -7,14 +7,18 @@ As its by nature all Unit tests are mandatorily run as an automated regression, 
 This unit tests are self explanatory by name and steps can be seen in their respective test classes, detailing here would be an unnecesary duplication of information 
 
 For the [StudyGroupController](../src/TestApp.Api/Controllers/StudyGroupController.cs) class in the TestApp.Api project, I created the [StudyGroupControllerTests](../src/Tests/TestApp.UnitTests/Api/StudyGroupControllerTests.cs) with the following tests:
- - CreateStudyGroup_ShouldReturnOkResult
- - GetStudyGroups_ShouldReturnOkObjectResultWithStudyGroups
- - SearchStudyGroups_ShouldReturnOkObjectResultWithFilteredStudyGroups
- - JoinStudyGroup_ShouldReturnOkResult
- - LeaveStudyGroup_ShouldReturnOkResult
- - CreateStudyGroup_UserAlreadyInStudyGroupWithSubject_ShouldThrowBadHttpRequestException
- - JoinStudyGroup_UserAlreadyInStudyGroupWithSubject_ShouldThrowBadHttpRequestException
- - JoinStudyGroup_StudyGroupNotFound_ShouldHandleException
+- CreateStudyGroup_ShouldReturnOkResult
+- SearchStudyGroups_WithNoParameter_ShouldReturnAllStudyGroups
+- SearchStudyGroups_WithSubject_ShouldReturnOkObjectResultWithFilteredStudyGroups
+- SearchStudyGroups_WithNullSubject_ShouldReturnAllStudyGroups
+- JoinStudyGroup_ShouldReturnOkResult
+- LeaveStudyGroup_ShouldReturnOkResult
+- CreateStudyGroup_UserAlreadyInStudyGroupWithSubject_ShouldThrowBadHttpRequestException
+- JoinStudyGroup_UserAlreadyInStudyGroupWithSubject_ShouldReturnBadRequest
+- JoinStudyGroup_StudyGroupNotFound_ShouldReturnBadRequest
+- SearchStudyGroups_WithAscendingSortOrder_ShouldReturnSortedGroups
+- SearchStudyGroups_WithDescendingSortOrder_ShouldReturnSortedGroups
+- SearchStudyGroups_WithSubjectAndSortOrder_ShouldReturnSortedFilteredGroups
 
 For the [StudyGroup](../src/TestApp.Core/Models/StudyGroup.cs) class in the TestApp.Core project, I created the [StudyGroupTests](../src/Tests/TestApp.UnitTests/Core/StudyGroupTests.cs) with the following tests:
 

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TestApp.Data.Repositories;
 using TestApp.Enums;
@@ -34,17 +33,23 @@ public class StudyGroupController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetStudyGroups()
+    public async Task<IActionResult> SearchStudyGroups(Subject? subject = null, string sortOrder = "asc")
     {
-        var studyGroups = await _studyGroupRepository.GetStudyGroups();
+        IEnumerable<StudyGroup> studyGroups;
 
-        return new OkObjectResult(studyGroups);
-    }
+        if (subject.HasValue)
+        {
+            studyGroups = await _studyGroupRepository.SearchStudyGroups(subject.Value);
+        }
+        else
+        {
+            studyGroups = await _studyGroupRepository.GetStudyGroups();
+        }
 
-    [HttpGet("search")]
-    public async Task<IActionResult> SearchStudyGroups(Subject subject)
-    {
-        var studyGroups = await _studyGroupRepository.SearchStudyGroups(subject);
+        // Sort by creation date
+        studyGroups = sortOrder?.ToLower() == "desc"
+            ? studyGroups.OrderByDescending(sg => sg.CreateDate)
+            : studyGroups.OrderBy(sg => sg.CreateDate);
 
         return new OkObjectResult(studyGroups);
     }
@@ -52,11 +57,17 @@ public class StudyGroupController : ControllerBase
     [HttpPatch("join")]
     public async Task<IActionResult> JoinStudyGroup(int studyGroupId, int userId)
     {
-        var studyGroup = _studyGroupRepository.GetStudyGroups().Result.First(sg => sg.StudyGroupId.Equals(studyGroupId));
+        var studyGroups = await _studyGroupRepository.GetStudyGroups();
+        var studyGroup = studyGroups.FirstOrDefault(sg => sg.StudyGroupId == studyGroupId);
+
+        if (studyGroup == null)
+        {
+            return BadRequest($"Study group with ID {studyGroupId} not found");
+        }
 
         if (await _studyGroupRepository.IsUserInStudyGroupWithSubject(userId, studyGroup.Subject))
         {
-            throw new BadHttpRequestException($"User {userId} is already in a study group with subject {studyGroup.Subject}");
+            return BadRequest($"User {userId} is already in a study group with subject {studyGroup.Subject}");
         }
 
         await _studyGroupRepository.JoinStudyGroup(studyGroupId, userId);

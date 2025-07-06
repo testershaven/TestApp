@@ -1,97 +1,154 @@
 # Component Tests
 
-My main objective with the component tests is to assert that all the components inside the project, work cohesively between each other. This means that Im running the WebApi InMemory, through WebApplicationFactory and injecting the Repository, in this case its a class, so was a easy injection, but in case is a real database I would probably mock that part and inject the mock instead
+My main objective with the component tests is to assert that all the components inside the project, work cohesively between each other. This means that Im running the WebApi InMemory, through WebApplicationFactory and injecting the Repository, in this case its a class, so was a easy injection, but in case is a real database I would probably mock that part and inject the mock . For this tests I added Allure Steps that can be shown in the reporter to a more granular detail.
 
 As its by nature all Component tests are mandatorily run as an automated regression, on each build in the pipeline, please see [dotnet.yml](../.github/workflows/dotnet.yml)
 
 This are the following tests added: 
 ---
 
-### 1. **`CreateStudyGroup_ThenGetStudyGroups_ShouldReturnCreatedGroup`**
+### 1. `CreateStudyGroup_ThenGetStudyGroups_ShouldReturnCreatedGroup`
 
-**Purpose**: Verify that creating a study group and then fetching all groups returns the created one.
-
-**Steps**:
-- **Arrange**: Create a new `StudyGroup` object with a user.
-- **Act**: Send a `POST` request to `/api/studygroup` to create it.
-- **Assert**:
-  - Ensure response is `200 OK`.
-  - Send a `GET` request to `/api/studygroup`.
-  - Ensure response is `200 OK` and contains exactly one group with correct `Name` and `Subject`.
-
----
-
-### 2. **`CreateStudyGroup_ThenSearchBySubject_ShouldReturnMatchingGroup`**
-
-**Purpose**: Ensure subject-based search returns only the matching group(s).
-
-**Steps**:
-- **Arrange**: Create a Math group and a Physics group.
-- **Act**:
-  - Send two `POST` requests to `/api/studygroup` for both groups.
-  - Send a `GET` request to `/api/studygroup/search?subject=Math`.
-- **Assert**:
-  - Ensure response is `200 OK`.
-  - Validate only the Math group is returned.
+**Steps:**
+1. Create a new `StudyGroup` object with subject `Math` and one user.
+2. Send POST request to `/api/studygroup`.
+3. Assert response status is `200 OK`.
+4. Send GET request to `/api/studygroup`.
+5. Assert:
+   - Response status is `200 OK`.
+   - Response contains 1 group.
+   - Group name is "Math Study Group".
+   - Subject is `Math`.
 
 ---
 
-### 3. **`JoinStudyGroup_ShouldAddUserToGroup`**
+### 2. `CreateStudyGroup_ThenSearchBySubject_ShouldReturnMatchingGroup`
 
-**Purpose**: Validate that a user can successfully join a study group.
-
-**Steps**:
-- **Arrange**: Create an empty Chemistry group via `POST`.
-- **Act**:
-  - Send a `PATCH` request to `/api/studygroup/join?studyGroupId=1&userId=5`.
-- **Assert**:
-  - Ensure join response is `200 OK`.
-  - Fetch study groups via `GET`, and validate the group contains the user with ID 5.
-
----
-
-### 4. **`JoinStudyGroup_ThenLeaveStudyGroup_ShouldRemoveUserFromGroup`**
-
-**Purpose**: Ensure a user can join then leave a group successfully.
-
-**Steps**:
-- **Arrange**: Create an empty Chemistry group via `POST`.
-- **Act**:
-  - Join the group (`PATCH /join`).
-  - Leave the group (`PATCH /leave`).
-- **Assert**:
-  - Both responses are `200 OK`.
-  - After leaving, fetch groups and ensure the group's user list is empty.
+**Steps:**
+1. Create two groups: one `Math`, one `Physics`.
+2. POST both groups.
+3. GET `/api/studygroup?subject=Math`.
+4. Assert:
+   - Response status is `200 OK`.
+   - Only one group is returned.
+   - Group's subject is `Math`.
 
 ---
 
-### 5. **`CreateStudyGroup_WithUserAlreadyInGroupWithSameSubject_ShouldFail`**
+### 3. `JoinStudyGroup_ShouldAddUserToGroup`
 
-**Purpose**: Prevent users from being in multiple groups of the same subject.
-
-**Steps**:
-- **Arrange**:
-  - Create a Math group with a user via `POST`.
-  - Create another Math group with the same user.
-- **Act**:
-  - Attempt to create the second group via `POST`.
-- **Assert**:
-  - Expect a `400 Bad Request`.
-  - Ensure only one group exists via `GET`.
+**Steps:**
+1. Create a `Chemistry` group with no users.
+2. POST the group.
+3. PATCH to `/api/studygroup/join?studyGroupId=1&userId=5`.
+4. Assert:
+   - Join response is `200 OK`.
+5. GET `/api/studygroup`.
+6. Assert:
+   - One user is added to the group.
+   - User ID is `5`.
 
 ---
 
-### 6. **`JoinStudyGroup_UserAlreadyInGroupWithSameSubject_ShouldFail`**
+### 4. `JoinStudyGroup_ThenLeaveStudyGroup_ShouldRemoveUserFromGroup`
 
-**Purpose**: Ensure users can't join multiple groups for the same subject.
+**Steps:**
+1. Create a `Chemistry` group.
+2. POST it.
+3. Join group with user ID `5`.
+4. Leave the group using `/api/studygroup/leave?studyGroupId=1&userId=5`.
+5. Assert:
+   - Leave response is `200 OK`.
+6. GET all groups.
+7. Assert:
+   - Group has zero users.
 
-**Steps**:
-- **Arrange**:
-  - Create two empty Math groups via `POST`.
-- **Act**:
-  - Join the first group (`PATCH /join`).
-  - Try joining the second group (`PATCH /join`).
-- **Assert**:
-  - Second join request should fail with `400 Bad Request`.
+---
+
+### 5. `CreateStudyGroup_WithUserAlreadyInGroupWithSameSubject_ShouldFail`
+
+**Steps:**
+1. Create a `Math` group with a user.
+2. POST it.
+3. Create another `Math` group with the same user.
+4. POST it.
+5. Assert:
+   - Response is `400 Bad Request`.
+6. GET all groups.
+7. Assert only one group exists.
+
+---
+
+### 6. `JoinStudyGroup_UserAlreadyInGroupWithSameSubject_ShouldFail`
+
+**Steps:**
+1. Create two `Math` groups.
+2. POST both.
+3. Join the first group with user ID `10`.
+4. Attempt to join the second.
+5. Assert:
+   - Join response is `400 Bad Request`.
+
+---
+
+### 7. `SearchStudyGroups_WithoutSubject_ShouldReturnAllGroups`
+
+**Steps:**
+1. Create 3 groups: `Math`, `Physics`, `Chemistry`.
+2. POST all.
+3. GET `/api/studygroup` (no filter).
+4. Assert:
+   - Response is `200 OK`.
+   - All 3 groups are returned.
+   - Subjects include `Math`, `Physics`, and `Chemistry`.
+
+---
+
+### 8. `SearchStudyGroups_WithAscendingSort_ShouldReturnOrderedGroups`
+
+**Steps:**
+1. Create groups with dates:
+   - 10 days ago → "Oldest Group"
+   - 5 days ago → "Middle Group"
+   - Today → "Newest Group"
+2. POST all (in any order).
+3. GET `/api/studygroup?sortOrder=asc`.
+4. Assert:
+   - Groups are sorted by creation date ascending:
+     1. Oldest
+     2. Middle
+     3. Newest
+
+---
+
+### 9. `SearchStudyGroups_WithDescendingSort_ShouldReturnOrderedGroups`
+
+**Steps:**
+1. Create same groups as above (oldest, middle, newest).
+2. POST all.
+3. GET `/api/studygroup?sortOrder=desc`.
+4. Assert:
+   - Groups are sorted by creation date descending:
+     1. Newest
+     2. Middle
+     3. Oldest
+
+---
+
+### 10. `SearchStudyGroups_WithSubjectAndSort_ShouldReturnFilteredOrderedGroups`
+
+**Steps:**
+1. Create:
+   - Old Math Group (10 days ago)
+   - New Math Group (today)
+   - Physics Group (5 days ago)
+2. POST all.
+3. GET `/api/studygroup?subject=Math&sortOrder=desc`.
+4. Assert:
+   - Only Math groups are returned.
+   - Sorted descending by date:
+     1. New Math Group
+     2. Old Math Group
+   - Physics group is not included.
 
 ---

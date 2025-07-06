@@ -205,7 +205,7 @@ namespace TestApp.UnitTests
         {
             // Act
             var mathGroups = await _repository.SearchStudyGroups(Subject.Math);
-            
+
             // Assert
             Assert.That(mathGroups, Is.Empty);
         }
