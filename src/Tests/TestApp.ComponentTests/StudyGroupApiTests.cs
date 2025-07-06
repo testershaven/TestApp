@@ -96,14 +96,14 @@ namespace TestApp.ComponentTests
             await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
 
             // Search for math groups
-            var searchResponse = await _client.GetAsync("/api/studygroup/search?subject=Math");
+            var searchResponse = await _client.GetAsync("/api/studygroup?subject=Math");
             var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
             // Should return only math group
             Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(returnedGroups, Is.Not.Null);
             Assert.That(returnedGroups, Has.Count.EqualTo(1));
-            Assert.That(returnedGroups[0].Subject, Is.EqualTo(Subject.Math));
+            Assert.That(returnedGroups?[0].Subject, Is.EqualTo(Subject.Math));
         }
 
         [Test]
@@ -134,8 +134,11 @@ namespace TestApp.ComponentTests
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
             // User should be in the group
-            Assert.That(returnedGroups[0].Users, Has.Count.EqualTo(1));
-            Assert.That(returnedGroups[0].Users[0].ID, Is.EqualTo(userId));
+            Assert.That(returnedGroups, Is.Not.Null);
+            Assert.That(returnedGroups?.Count, Is.GreaterThan(0));
+            Assert.That(returnedGroups?[0].Users, Is.Not.Null);
+            Assert.That(returnedGroups?[0].Users, Has.Count.EqualTo(1));
+            Assert.That(returnedGroups?[0].Users?[0].ID, Is.EqualTo(userId));
         }
 
         [Test]
@@ -171,7 +174,10 @@ namespace TestApp.ComponentTests
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
             // Assert - User should no longer be in the group
-            Assert.That(returnedGroups[0].Users, Is.Empty);
+            Assert.That(returnedGroups, Is.Not.Null);
+            Assert.That(returnedGroups?.Count, Is.GreaterThan(0));
+            Assert.That(returnedGroups?[0].Users, Is.Not.Null);
+            Assert.That(returnedGroups?[0].Users, Is.Empty);
         }
 
         [Test]
@@ -246,6 +252,56 @@ namespace TestApp.ComponentTests
 
             // Should fail because user is already in a math group
             Assert.That(joinResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        }
+
+        [Test]
+        [AllureDescription("Test searching study groups without specifying a subject")]
+        public async Task SearchStudyGroups_WithoutSubject_ShouldReturnAllGroups()
+        {
+            // Arrange - Create study groups with different subjects
+            var mathGroup = new StudyGroup(
+                studyGroupId: 1,
+                name: "Math Study Group",
+                subject: Subject.Math,
+                createDate: DateTime.Now,
+                users: []
+            );
+
+            var physicsGroup = new StudyGroup(
+                studyGroupId: 2,
+                name: "Physics Study Group",
+                subject: Subject.Physics,
+                createDate: DateTime.Now,
+                users: []
+            );
+
+            var chemistryGroup = new StudyGroup(
+                studyGroupId: 3,
+                name: "Chemistry Study Group",
+                subject: Subject.Chemistry,
+                createDate: DateTime.Now,
+                users: []
+            );
+
+            // Create three study groups
+            await _client.PostAsJsonAsync("/api/studygroup", mathGroup);
+            await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
+            await _client.PostAsJsonAsync("/api/studygroup", chemistryGroup);
+
+            // Act - Search without specifying a subject
+            var searchResponse = await _client.GetAsync("/api/studygroup");
+            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+
+            // Assert - Should return all groups
+            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(returnedGroups, Is.Not.Null);
+            Assert.That(returnedGroups, Has.Count.EqualTo(3));
+            
+            // Verify all subjects are represented
+            var subjects = returnedGroups.Select(g => g.Subject).ToList();
+            CollectionAssert.Contains(subjects, Subject.Math);
+            CollectionAssert.Contains(subjects, Subject.Physics);
+            CollectionAssert.Contains(subjects, Subject.Chemistry);
         }
     }
 }

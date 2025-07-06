@@ -34,29 +34,34 @@ public class StudyGroupController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetStudyGroups()
+    public async Task<IActionResult> SearchStudyGroups(Subject? subject = null)
     {
-        var studyGroups = await _studyGroupRepository.GetStudyGroups();
-
-        return new OkObjectResult(studyGroups);
-    }
-
-    [HttpGet("search")]
-    public async Task<IActionResult> SearchStudyGroups(Subject subject)
-    {
-        var studyGroups = await _studyGroupRepository.SearchStudyGroups(subject);
-
-        return new OkObjectResult(studyGroups);
+        if (subject.HasValue)
+        {
+            var filteredStudyGroups = await _studyGroupRepository.SearchStudyGroups(subject.Value);
+            return new OkObjectResult(filteredStudyGroups);
+        }
+        else
+        {
+            var allStudyGroups = await _studyGroupRepository.GetStudyGroups();
+            return new OkObjectResult(allStudyGroups);
+        }
     }
 
     [HttpPatch("join")]
     public async Task<IActionResult> JoinStudyGroup(int studyGroupId, int userId)
     {
-        var studyGroup = _studyGroupRepository.GetStudyGroups().Result.First(sg => sg.StudyGroupId.Equals(studyGroupId));
+        var studyGroups = await _studyGroupRepository.GetStudyGroups();
+        var studyGroup = studyGroups.FirstOrDefault(sg => sg.StudyGroupId == studyGroupId);
+            
+        if (studyGroup == null)
+        {
+            return BadRequest($"Study group with ID {studyGroupId} not found");
+        }
 
         if (await _studyGroupRepository.IsUserInStudyGroupWithSubject(userId, studyGroup.Subject))
         {
-            throw new BadHttpRequestException($"User {userId} is already in a study group with subject {studyGroup.Subject}");
+            return BadRequest($"User {userId} is already in a study group with subject {studyGroup.Subject}");
         }
 
         await _studyGroupRepository.JoinStudyGroup(studyGroupId, userId);
