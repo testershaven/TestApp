@@ -1,4 +1,5 @@
-﻿using Allure.NUnit;
+﻿using Allure.Net.Commons;
+using Allure.NUnit;
 using Allure.NUnit.Attributes;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,6 @@ namespace TestApp.ComponentTests
     [AllureNUnit]
     [AllureFeature("StudyGroup features")]
     [AllureParentSuite("Component Tests")]
-
     public class StudyGroupApiTests
     {
         private WebApplicationFactory<Program> _factory;
@@ -32,7 +32,6 @@ namespace TestApp.ComponentTests
                 });
 
             _client = _factory.CreateClient();
-
         }
 
         [TearDown]
@@ -45,413 +44,208 @@ namespace TestApp.ComponentTests
         [Test]
         public async Task CreateStudyGroup_ThenGetStudyGroups_ShouldReturnCreatedGroup()
         {
-            var newStudyGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Math Study Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: new List<User> { new User(1, "Test User") }
-            );
+            var newStudyGroup = new StudyGroup(1, "Math Study Group", Subject.Math, DateTime.Now, new List<User> { new User(1, "Test User") });
 
-            var createResponse = await _client.PostAsJsonAsync("/api/studygroup", newStudyGroup);
+            AllureApi.Step("Creating a new study group");
+            var response = await _client.PostAsJsonAsync("/api/studygroup", newStudyGroup);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-            // Response should be successful
-            Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-            // Get all study groups
+            AllureApi.Step("Retrieving all study groups and verifying the created group");
             var getResponse = await _client.GetAsync("/api/studygroup");
             var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Response should be successful and contain the created group
-            Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups, Has.Count.EqualTo(1));
-            Assert.That(returnedGroups[0].Name, Is.EqualTo("Math Study Group"));
-            Assert.That(returnedGroups[0].Subject, Is.EqualTo(Subject.Math));
+            Assert.Multiple(() =>
+            {
+                Assert.That(getResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(returnedGroups, Is.Not.Null);
+                Assert.That(returnedGroups, Has.Count.EqualTo(1));
+                Assert.That(returnedGroups[0].Name, Is.EqualTo("Math Study Group"));
+                Assert.That(returnedGroups[0].Subject, Is.EqualTo(Subject.Math));
+            });
         }
 
         [Test]
         public async Task CreateStudyGroup_ThenSearchBySubject_ShouldReturnMatchingGroup()
         {
-            var mathGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Math Study Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: new List<User>()
-            );
+            var mathGroup = new StudyGroup(1, "Math Study Group", Subject.Math, DateTime.Now, []);
+            var physicsGroup = new StudyGroup(2, "Physics Study Group", Subject.Physics, DateTime.Now, []);
 
-            var physicsGroup = new StudyGroup(
-                studyGroupId: 2,
-                name: "Physics Study Group",
-                subject: Subject.Physics,
-                createDate: DateTime.Now,
-                users: new List<User>()
-            );
-
-            // Create two study groups
+            AllureApi.Step("Creating two study groups");
             await _client.PostAsJsonAsync("/api/studygroup", mathGroup);
             await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
 
-            // Search for math groups
-            var searchResponse = await _client.GetAsync("/api/studygroup?subject=Math");
-            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+            AllureApi.Step("Searching for study groups with subject 'Math'");
+            var response = await _client.GetAsync("/api/studygroup?subject=Math");
+            var groups = await response.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Should return only math group
-            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups, Has.Count.EqualTo(1));
-            Assert.That(returnedGroups?[0].Subject, Is.EqualTo(Subject.Math));
+            Assert.Multiple(() =>
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(groups, Is.Not.Null);
+                Assert.That(groups, Has.Count.EqualTo(1));
+                Assert.That(groups[0].Subject, Is.EqualTo(Subject.Math));
+            });
         }
 
         [Test]
         public async Task JoinStudyGroup_ShouldAddUserToGroup()
         {
-            // Create a study group
-            var studyGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Chemistry Study Group",
-                subject: Subject.Chemistry,
-                createDate: DateTime.Now,
-                users: []
-            );
-            await _client.PostAsJsonAsync("/api/studygroup", studyGroup);
-
+            var studyGroup = new StudyGroup(1, "Chemistry Study Group", Subject.Chemistry, DateTime.Now, []);
             int userId = 5;
 
-            // Join the study group
-            var joinResponse = await _client.PatchAsync(
-                $"/api/studygroup/join?studyGroupId=1&userId={userId}",
-                null);
+            AllureApi.Step("Creating a chemistry study group");
+            await _client.PostAsJsonAsync("/api/studygroup", studyGroup);
 
-            // Response should be successful
-            Assert.That(joinResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            AllureApi.Step($"User {userId} joins the study group");
+            var response = await _client.PatchAsync($"/api/studygroup/join?studyGroupId=1&userId={userId}", null);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-            // Get the updated study groups
+            AllureApi.Step("Verifying the user was added to the group");
             var getResponse = await _client.GetAsync("/api/studygroup");
-            var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+            var groups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // User should be in the group
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups?.Count, Is.GreaterThan(0));
-            Assert.That(returnedGroups?[0].Users, Is.Not.Null);
-            Assert.That(returnedGroups?[0].Users, Has.Count.EqualTo(1));
-            Assert.That(returnedGroups?[0].Users?[0].ID, Is.EqualTo(userId));
+            Assert.Multiple(() =>
+            {
+                Assert.That(groups, Is.Not.Null);
+                Assert.That(groups?[0].Users, Has.Count.EqualTo(1));
+                Assert.That(groups?[0].Users?[0].ID, Is.EqualTo(userId));
+            });
         }
 
         [Test]
         public async Task JoinStudyGroup_ThenLeaveStudyGroup_ShouldRemoveUserFromGroup()
         {
-            // Create a study group
-            var studyGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Chemistry Study Group",
-                subject: Subject.Chemistry,
-                createDate: DateTime.Now,
-                users: []
-            );
-            await _client.PostAsJsonAsync("/api/studygroup", studyGroup);
-
+            var studyGroup = new StudyGroup(1, "Chemistry Study Group", Subject.Chemistry, DateTime.Now, []);
             int userId = 5;
 
-            // Join the study group
-            await _client.PatchAsync(
-                $"/api/studygroup/join?studyGroupId=1&userId={userId}",
-                null);
+            await _client.PostAsJsonAsync("/api/studygroup", studyGroup);
+            await _client.PatchAsync($"/api/studygroup/join?studyGroupId=1&userId={userId}", null);
 
-            // Leave the study group
-            var leaveResponse = await _client.PatchAsync(
-                $"/api/studygroup/leave?studyGroupId=1&userId={userId}",
-                null);
+            AllureApi.Step($"User {userId} leaves the study group");
+            var response = await _client.PatchAsync($"/api/studygroup/leave?studyGroupId=1&userId={userId}", null);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-            // Response should be successful
-            Assert.That(leaveResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-            // Get the updated study groups
+            AllureApi.Step("Verifying the user was removed from the group");
             var getResponse = await _client.GetAsync("/api/studygroup");
-            var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+            var groups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // User should no longer be in the group
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups?.Count, Is.GreaterThan(0));
-            Assert.That(returnedGroups?[0].Users, Is.Not.Null);
-            Assert.That(returnedGroups?[0].Users, Is.Empty);
+            Assert.Multiple(() =>
+            {
+                Assert.That(groups, Is.Not.Null);
+                Assert.That(groups?[0].Users, Is.Empty);
+            });
         }
 
         [Test]
         public async Task CreateStudyGroup_WithUserAlreadyInGroupWithSameSubject_ShouldFail()
         {
-            // Create a study group with a user
             var user = new User(1, "Test User");
-            var mathGroup1 = new StudyGroup(
-                studyGroupId: 1,
-                name: "First Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: [user]
-            );
-            await _client.PostAsJsonAsync("/api/studygroup", mathGroup1);
 
-            // Create a second math group with the same user
-            var mathGroup2 = new StudyGroup(
-                studyGroupId: 2,
-                name: "Second Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: [user]
-            );
+            var group1 = new StudyGroup(1, "First Math Group", Subject.Math, DateTime.Now, [user]);
+            var group2 = new StudyGroup(2, "Second Math Group", Subject.Math, DateTime.Now, [user]);
 
-            // Try to create another math group with the same user
-            var createResponse = await _client.PostAsJsonAsync("/api/studygroup", mathGroup2);
+            await _client.PostAsJsonAsync("/api/studygroup", group1);
 
-            // Should fail because user is already in a math group
-            Assert.That(createResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            AllureApi.Step("Attempting to create a second group with the same subject and user");
+            var response = await _client.PostAsJsonAsync("/api/studygroup", group2);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
 
-            // Verify only one group was created
+            AllureApi.Step("Verifying that only one group was created");
             var getResponse = await _client.GetAsync("/api/studygroup");
-            var returnedGroups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
-            Assert.That(returnedGroups, Has.Count.EqualTo(1));
+            var groups = await getResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
+            Assert.That(groups, Has.Count.EqualTo(1));
         }
 
         [Test]
         public async Task JoinStudyGroup_UserAlreadyInGroupWithSameSubject_ShouldFail()
         {
-            // Create two math groups
-            var mathGroup1 = new StudyGroup(
-                studyGroupId: 1,
-                name: "First Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: []
-            );
-
-            var mathGroup2 = new StudyGroup(
-                studyGroupId: 2,
-                name: "Second Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: []
-            );
-
-            await _client.PostAsJsonAsync("/api/studygroup", mathGroup1);
-            await _client.PostAsJsonAsync("/api/studygroup", mathGroup2);
-
+            var group1 = new StudyGroup(1, "First Math Group", Subject.Math, DateTime.Now, []);
+            var group2 = new StudyGroup(2, "Second Math Group", Subject.Math, DateTime.Now, []);
             int userId = 10;
 
-            // Join the first math group
-            await _client.PatchAsync(
-                $"/api/studygroup/join?studyGroupId=1&userId={userId}",
-                null);
+            await _client.PostAsJsonAsync("/api/studygroup", group1);
+            await _client.PostAsJsonAsync("/api/studygroup", group2);
+            await _client.PatchAsync($"/api/studygroup/join?studyGroupId=1&userId={userId}", null);
 
-            // Try to join the second math group
-            var joinResponse = await _client.PatchAsync(
-                $"/api/studygroup/join?studyGroupId=2&userId={userId}",
-                null);
-
-            // Should fail because user is already in a math group
-            Assert.That(joinResponse.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            AllureApi.Step("Attempting to join a second group with the same subject");
+            var response = await _client.PatchAsync($"/api/studygroup/join?studyGroupId=2&userId={userId}", null);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         }
 
         [Test]
         [AllureDescription("Test searching study groups without specifying a subject")]
         public async Task SearchStudyGroups_WithoutSubject_ShouldReturnAllGroups()
         {
-            // Create study groups with different subjects
-            var mathGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Math Study Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now,
-                users: []
-            );
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(1, "Mathematics", Subject.Math, DateTime.Now, []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(2, "Physics", Subject.Physics, DateTime.Now, []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(3, "Chemistry", Subject.Chemistry, DateTime.Now, []));
 
-            var physicsGroup = new StudyGroup(
-                studyGroupId: 2,
-                name: "Physics Study Group",
-                subject: Subject.Physics,
-                createDate: DateTime.Now,
-                users: []
-            );
+            AllureApi.Step("Fetching all study groups without filtering");
+            var response = await _client.GetAsync("/api/studygroup");
+            var groups = await response.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            var chemistryGroup = new StudyGroup(
-                studyGroupId: 3,
-                name: "Chemistry Study Group",
-                subject: Subject.Chemistry,
-                createDate: DateTime.Now,
-                users: []
-            );
-
-            // Create three study groups
-            await _client.PostAsJsonAsync("/api/studygroup", mathGroup);
-            await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
-            await _client.PostAsJsonAsync("/api/studygroup", chemistryGroup);
-
-            // Search without specifying a subject
-            var searchResponse = await _client.GetAsync("/api/studygroup");
-            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
-
-            // Should return all groups
-            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups, Has.Count.EqualTo(3));
-            
-            // Verify all subjects are represented
-            var subjects = returnedGroups.Select(g => g.Subject).ToList();
-            CollectionAssert.Contains(subjects, Subject.Math);
-            CollectionAssert.Contains(subjects, Subject.Physics);
-            CollectionAssert.Contains(subjects, Subject.Chemistry);
+            Assert.Multiple(() =>
+            {
+                Assert.That(groups, Has.Count.EqualTo(3));
+                CollectionAssert.Contains(groups.Select(g => g.Subject), Subject.Math);
+                CollectionAssert.Contains(groups.Select(g => g.Subject), Subject.Physics);
+                CollectionAssert.Contains(groups.Select(g => g.Subject), Subject.Chemistry);
+            });
         }
 
         [Test]
         [AllureDescription("Test sorting study groups by creation date in ascending order")]
         public async Task SearchStudyGroups_WithAscendingSort_ShouldReturnOrderedGroups()
         {
-            // Create study groups with different creation dates
-            var oldestGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Oldest Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now.AddDays(-10), // 10 days ago
-                users: []
-            );
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(1, "Oldest", Subject.Math, DateTime.Now.AddDays(-10), []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(3, "Newest", Subject.Chemistry, DateTime.Now, []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(2, "Middle", Subject.Physics, DateTime.Now.AddDays(-5), []));
 
-            var middleGroup = new StudyGroup(
-                studyGroupId: 2,
-                name: "Middle Group",
-                subject: Subject.Physics,
-                createDate: DateTime.Now.AddDays(-5), // 5 days ago
-                users: []
-            );
+            AllureApi.Step("Verifying ascending order of groups by creation date");
+            var response = await _client.GetAsync("/api/studygroup?sortOrder=asc");
+            var groups = await response.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            var newestGroup = new StudyGroup(
-                studyGroupId: 3,
-                name: "Newest Group",
-                subject: Subject.Chemistry,
-                createDate: DateTime.Now, // today
-                users: []
-            );
-
-            // Create three study groups
-            await _client.PostAsJsonAsync("/api/studygroup", oldestGroup);
-            await _client.PostAsJsonAsync("/api/studygroup", newestGroup); // Intentionally out of order
-            await _client.PostAsJsonAsync("/api/studygroup", middleGroup);
-
-            // Search with ascending sort
-            var searchResponse = await _client.GetAsync("/api/studygroup?sortOrder=asc");
-            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
-
-            // Should return groups in ascending order by creation date
-            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups, Has.Count.EqualTo(3));
-            
-            // Check the order is correct
-            Assert.That(returnedGroups?[0].Name, Is.EqualTo("Oldest Group"));
-            Assert.That(returnedGroups?[1].Name, Is.EqualTo("Middle Group"));
-            Assert.That(returnedGroups?[2].Name, Is.EqualTo("Newest Group"));
+            Assert.That(groups[0].Name, Is.EqualTo("Oldest"));
+            Assert.That(groups[1].Name, Is.EqualTo("Middle"));
+            Assert.That(groups[2].Name, Is.EqualTo("Newest"));
         }
 
         [Test]
         [AllureDescription("Test sorting study groups by creation date in descending order")]
         public async Task SearchStudyGroups_WithDescendingSort_ShouldReturnOrderedGroups()
         {
-            // Create study groups with different creation dates
-            var oldestGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Oldest Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now.AddDays(-10), // 10 days ago
-                users: []
-            );
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(1, "Oldest", Subject.Math, DateTime.Now.AddDays(-10), []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(3, "Newest", Subject.Chemistry, DateTime.Now, []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(2, "Middle", Subject.Physics, DateTime.Now.AddDays(-5), []));
 
-            var middleGroup = new StudyGroup(
-                studyGroupId: 2,
-                name: "Middle Group",
-                subject: Subject.Physics,
-                createDate: DateTime.Now.AddDays(-5), // 5 days ago
-                users: []
-            );
+            AllureApi.Step("Verifying descending order of groups by creation date");
+            var response = await _client.GetAsync("/api/studygroup?sortOrder=desc");
+            var groups = await response.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            var newestGroup = new StudyGroup(
-                studyGroupId: 3,
-                name: "Newest Group",
-                subject: Subject.Chemistry,
-                createDate: DateTime.Now, // today
-                users: []
-            );
-
-            // Create three study groups
-            await _client.PostAsJsonAsync("/api/studygroup", oldestGroup);
-            await _client.PostAsJsonAsync("/api/studygroup", newestGroup); // Intentionally out of order
-            await _client.PostAsJsonAsync("/api/studygroup", middleGroup);
-
-            // Search with descending sort
-            var searchResponse = await _client.GetAsync("/api/studygroup?sortOrder=desc");
-            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
-
-            // Should return groups in descending order by creation date
-            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups, Has.Count.EqualTo(3));
-            
-            // Check the order is correct
-            Assert.That(returnedGroups?[0].Name, Is.EqualTo("Newest Group"));
-            Assert.That(returnedGroups?[1].Name, Is.EqualTo("Middle Group"));
-            Assert.That(returnedGroups?[2].Name, Is.EqualTo("Oldest Group"));
+            Assert.That(groups[0].Name, Is.EqualTo("Newest"));
+            Assert.That(groups[1].Name, Is.EqualTo("Middle"));
+            Assert.That(groups[2].Name, Is.EqualTo("Oldest"));
         }
 
         [Test]
         [AllureDescription("Test sorting filtered study groups by creation date")]
         public async Task SearchStudyGroups_WithSubjectAndSort_ShouldReturnFilteredOrderedGroups()
         {
-            // Create math study groups with different creation dates
-            var oldMathGroup = new StudyGroup(
-                studyGroupId: 1,
-                name: "Old Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now.AddDays(-10), // 10 days ago
-                users: []
-            );
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(1, "Old Math", Subject.Math, DateTime.Now.AddDays(-10), []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(3, "Physics", Subject.Physics, DateTime.Now.AddDays(-5), []));
+            await _client.PostAsJsonAsync("/api/studygroup", new StudyGroup(2, "New Math", Subject.Math, DateTime.Now, []));
 
-            var newMathGroup = new StudyGroup(
-                studyGroupId: 2,
-                name: "New Math Group",
-                subject: Subject.Math,
-                createDate: DateTime.Now, // today
-                users: []
-            );
+            AllureApi.Step("Filtering by subject 'Math' and sorting descending");
+            var response = await _client.GetAsync("/api/studygroup?subject=Math&sortOrder=desc");
+            var groups = await response.Content.ReadFromJsonAsync<List<StudyGroup>>();
 
-            // Create a physics group to ensure filtering works
-            var physicsGroup = new StudyGroup(
-                studyGroupId: 3,
-                name: "Physics Group",
-                subject: Subject.Physics,
-                createDate: DateTime.Now.AddDays(-5), // 5 days ago
-                users: []
-            );
-
-            // Create study groups
-            await _client.PostAsJsonAsync("/api/studygroup", oldMathGroup);
-            await _client.PostAsJsonAsync("/api/studygroup", physicsGroup);
-            await _client.PostAsJsonAsync("/api/studygroup", newMathGroup);
-
-            // Search with subject filter and descending sort
-            var searchResponse = await _client.GetAsync("/api/studygroup?subject=Math&sortOrder=desc");
-            var returnedGroups = await searchResponse.Content.ReadFromJsonAsync<List<StudyGroup>>();
-
-            // Should return only math groups in descending order by creation date
-            Assert.That(searchResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(returnedGroups, Is.Not.Null);
-            Assert.That(returnedGroups, Has.Count.EqualTo(2));
-            
-            // Check the order is correct and only math groups are returned
-            Assert.That(returnedGroups?[0].Name, Is.EqualTo("New Math Group"));
-            Assert.That(returnedGroups?[0].Subject, Is.EqualTo(Subject.Math));
-            Assert.That(returnedGroups?[1].Name, Is.EqualTo("Old Math Group"));
-            Assert.That(returnedGroups?[1].Subject, Is.EqualTo(Subject.Math));
-            
-            // Ensure physics group is not included
-            Assert.That(returnedGroups?.Any(g => g.Subject == Subject.Physics), Is.False);
+            Assert.Multiple(() =>
+            {
+                Assert.That(groups, Has.Count.EqualTo(2));
+                Assert.That(groups[0].Name, Is.EqualTo("New Math"));
+                Assert.That(groups[1].Name, Is.EqualTo("Old Math"));
+                Assert.That(groups.All(g => g.Subject == Subject.Math), Is.True);
+            });
         }
     }
 }

@@ -92,7 +92,7 @@ namespace TestApp.UnitTests.Api
             _mockRepository.Verify(repo => repo.SearchStudyGroups(subjectToSearch), Times.Once);
             _mockRepository.Verify(repo => repo.GetStudyGroups(), Times.Never);
         }
-        
+
         [Test]
         [AllureDescription("Test searching for study groups with null subject parameter")]
         public async Task SearchStudyGroups_WithNullSubject_ShouldReturnAllStudyGroups()
@@ -182,12 +182,12 @@ namespace TestApp.UnitTests.Api
                 .ReturnsAsync(true);
 
             // Act & Assert
-            var exception = Assert.ThrowsAsync<BadHttpRequestException>(async () => 
+            var exception = Assert.ThrowsAsync<BadHttpRequestException>(async () =>
                 await _controller.CreateStudyGroup(studyGroup));
-            
+
             // Use await to ensure the async method completes
             await Task.CompletedTask;
-            
+
             Assert.That(exception.Message, Does.Contain($"User {user.ID} is already in a study group with subject {studyGroup.Subject}"));
             _mockRepository.Verify(repo => repo.CreateStudyGroup(It.IsAny<StudyGroup>()), Times.Never);
         }
@@ -212,12 +212,12 @@ namespace TestApp.UnitTests.Api
 
             // Act
             var result = await _controller.JoinStudyGroup(studyGroupId, userId);
-            
+
             // Assert
             Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
             var badRequestResult = result as BadRequestObjectResult;
             Assert.That(badRequestResult?.Value?.ToString(), Does.Contain("already in a study group with subject").IgnoreCase);
-            
+
             _mockRepository.Verify(repo => repo.JoinStudyGroup(studyGroupId, userId), Times.Never);
         }
 
@@ -234,12 +234,12 @@ namespace TestApp.UnitTests.Api
 
             // Act
             var result = await _controller.JoinStudyGroup(nonExistentStudyGroupId, userId);
-            
+
             // Assert
             Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
             var badRequestResult = result as BadRequestObjectResult;
             Assert.That(badRequestResult?.Value?.ToString(), Does.Contain("not found").IgnoreCase);
-            
+
             _mockRepository.Verify(repo => repo.IsUserInStudyGroupWithSubject(It.IsAny<int>(), It.IsAny<Subject>()), Times.Never);
             _mockRepository.Verify(repo => repo.JoinStudyGroup(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         }
@@ -251,7 +251,7 @@ namespace TestApp.UnitTests.Api
             // Arrange
             var olderDate = new DateTime(2023, 1, 1);
             var newerDate = new DateTime(2023, 2, 1);
-            
+
             var studyGroups = new List<StudyGroup>
             {
                 new(1, "Math Study", Subject.Math, newerDate, new List<User>()),
@@ -269,18 +269,18 @@ namespace TestApp.UnitTests.Api
             var okResult = result as OkObjectResult;
             var returnedGroups = okResult?.Value as IEnumerable<StudyGroup>;
             Assert.That(returnedGroups, Is.Not.Null);
-            
+
             var groupsList = returnedGroups?.ToList();
             Assert.That(groupsList?.Count, Is.EqualTo(2));
-            
+
             // First item should be the oldest (with olderDate)
             Assert.That(groupsList?[0].CreateDate, Is.EqualTo(olderDate));
             Assert.That(groupsList?[0].StudyGroupId, Is.EqualTo(2));
-            
+
             // Second item should be the newest (with newerDate)
             Assert.That(groupsList?[1].CreateDate, Is.EqualTo(newerDate));
             Assert.That(groupsList?[1].StudyGroupId, Is.EqualTo(1));
-            
+
             _mockRepository.Verify(repo => repo.GetStudyGroups(), Times.Once);
         }
 
@@ -291,7 +291,7 @@ namespace TestApp.UnitTests.Api
             // Arrange
             var olderDate = new DateTime(2023, 1, 1);
             var newerDate = new DateTime(2023, 2, 1);
-            
+
             var studyGroups = new List<StudyGroup>
             {
                 new(1, "Math Study", Subject.Math, newerDate, new List<User>()),
@@ -309,18 +309,18 @@ namespace TestApp.UnitTests.Api
             var okResult = result as OkObjectResult;
             var returnedGroups = okResult?.Value as IEnumerable<StudyGroup>;
             Assert.That(returnedGroups, Is.Not.Null);
-            
+
             var groupsList = returnedGroups?.ToList();
             Assert.That(groupsList?.Count, Is.EqualTo(2));
-            
+
             // First item should be the newest (with newerDate)
             Assert.That(groupsList?[0].CreateDate, Is.EqualTo(newerDate));
             Assert.That(groupsList?[0].StudyGroupId, Is.EqualTo(1));
-            
+
             // Second item should be the oldest (with olderDate)
             Assert.That(groupsList?[1].CreateDate, Is.EqualTo(olderDate));
             Assert.That(groupsList?[1].StudyGroupId, Is.EqualTo(2));
-            
+
             _mockRepository.Verify(repo => repo.GetStudyGroups(), Times.Once);
         }
 
@@ -332,7 +332,7 @@ namespace TestApp.UnitTests.Api
             var olderDate = new DateTime(2023, 1, 1);
             var newerDate = new DateTime(2023, 2, 1);
             var subjectToSearch = Subject.Math;
-            
+
             var studyGroups = new List<StudyGroup>
             {
                 new(1, "Advanced Math", Subject.Math, newerDate, new List<User>()),
@@ -350,18 +350,18 @@ namespace TestApp.UnitTests.Api
             var okResult = result as OkObjectResult;
             var returnedGroups = okResult?.Value as IEnumerable<StudyGroup>;
             Assert.That(returnedGroups, Is.Not.Null);
-            
+
             var groupsList = returnedGroups?.ToList();
             Assert.That(groupsList?.Count, Is.EqualTo(2));
-            
+
             // First item should be the newest (with newerDate)
             Assert.That(groupsList?[0].CreateDate, Is.EqualTo(newerDate));
             Assert.That(groupsList?[0].Name, Is.EqualTo("Advanced Math"));
-            
+
             // Second item should be the oldest (with olderDate)
             Assert.That(groupsList?[1].CreateDate, Is.EqualTo(olderDate));
             Assert.That(groupsList?[1].Name, Is.EqualTo("Basic Math"));
-            
+
             _mockRepository.Verify(repo => repo.SearchStudyGroups(subjectToSearch), Times.Once);
             _mockRepository.Verify(repo => repo.GetStudyGroups(), Times.Never);
         }

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TestApp.Data.Repositories;
 using TestApp.Enums;
@@ -37,7 +36,7 @@ public class StudyGroupController : ControllerBase
     public async Task<IActionResult> SearchStudyGroups(Subject? subject = null, string sortOrder = "asc")
     {
         IEnumerable<StudyGroup> studyGroups;
-        
+
         if (subject.HasValue)
         {
             studyGroups = await _studyGroupRepository.SearchStudyGroups(subject.Value);
@@ -48,10 +47,10 @@ public class StudyGroupController : ControllerBase
         }
 
         // Sort by creation date
-        studyGroups = sortOrder?.ToLower() == "desc" 
+        studyGroups = sortOrder?.ToLower() == "desc"
             ? studyGroups.OrderByDescending(sg => sg.CreateDate)
             : studyGroups.OrderBy(sg => sg.CreateDate);
-            
+
         return new OkObjectResult(studyGroups);
     }
 
@@ -60,7 +59,7 @@ public class StudyGroupController : ControllerBase
     {
         var studyGroups = await _studyGroupRepository.GetStudyGroups();
         var studyGroup = studyGroups.FirstOrDefault(sg => sg.StudyGroupId == studyGroupId);
-            
+
         if (studyGroup == null)
         {
             return BadRequest($"Study group with ID {studyGroupId} not found");

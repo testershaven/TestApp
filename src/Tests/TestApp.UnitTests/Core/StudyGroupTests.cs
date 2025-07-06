@@ -106,13 +106,13 @@ namespace TestApp.UnitTests.Core
         public void Constructor_SpecificDateTime_AssignsCorrectly()
         {
             var specificDate = new DateTime(2023, 1, 1, 12, 0, 0);
-            
+
             var studyGroup = new StudyGroup(1, "Valid Group Name", Subject.Math, specificDate, new List<User>());
-            
+
             Assert.That(studyGroup.CreateDate, Is.EqualTo(specificDate));
         }
 
-        
+
         [Test]
         public void RemoveUser_UserNotInList_ReturnsFalse()
         {
@@ -120,9 +120,9 @@ namespace TestApp.UnitTests.Core
             var nonExistingUser = new User(2, "Non-Existing User");
             var users = new List<User> { existingUser };
             var studyGroup = new StudyGroup(1, "Valid Group Name", Subject.Chemistry, DateTime.Now, users);
-            
+
             studyGroup.RemoveUser(nonExistingUser);
-            
+
             Assert.That(studyGroup.Users.Count, Is.EqualTo(1));
         }
     }
