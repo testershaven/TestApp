@@ -1,6 +1,6 @@
 # Component Tests
 
-My main objective with the component tests is to assert that all the components inside the project, work cohesively between each other. This means that Im running the WebApi InMemory, through WebApplicationFactory and injecting the Repository, in this case its a class, so was a easy injection, but in case is a real database I would probably mock that part and inject the mock instead
+My main objective with the component tests is to assert that all the components inside the project, work cohesively between each other. This means that Im running the WebApi InMemory, through WebApplicationFactory and injecting the Repository, in this case its a class, so was a easy injection, but in case is a real database I would probably mock that part and inject the mock . For this tests I added Allure Steps that can be shown in the reporter to a more granular detail.
 
 As its by nature all Component tests are mandatorily run as an automated regression, on each build in the pipeline, please see [dotnet.yml](../.github/workflows/dotnet.yml)
 
