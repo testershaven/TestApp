@@ -51,10 +51,11 @@ To see the code of the automated test cases please refer to the files
 
  - ComponentTests
     - [StudyGroupApiTests](src/Tests/TestApp.ComponentTests/StudyGroupApiTests.cs)
+
+  - Unit Tests
+    - [StudyGroupRepositoryTests](src/Tests/TestApp.UnitTests/Data/StudyGroupRepositoryTests.cs)
     - [StudyGroupControllerTests](src/Tests/TestApp.UnitTests/Api/StudyGroupControllerTests.cs)
     - [StudyGroupTests](src/Tests/TestApp.UnitTests/Core/StudyGroupTests.cs)
-  - Unit Tests
-      - [StudyGroupRepositoryTests](src/Tests/TestApp.UnitTests/Data/StudyGroupRepositoryTests.cs)
 
 ---
 
@@ -80,7 +81,7 @@ ORDER BY sg.CreateDate ASC;
 
 ## Extras for home assignment
 
-I did 3 extra main points for this homeassignment
+I did 4 extra main points for this homeassignment
  - Created a running WebApi with logic according to acceptance criteria
  - Run all the tests through a pipeline in github actions, those can be found in [HERE](https://github.com/testershaven/TestApp/actions)
  - Mounted an allure server where all results are being stored, I added some documentation [HERE](./docs/allureserver.md)
